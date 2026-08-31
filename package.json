@@ -1,0 +1,12 @@
+{
+  "name": "netpulse",
+  "private": true,
+  "description": "NetPulse Internet Health Intelligence Platform",
+  "scripts": {
+    "dev": "npm --prefix netpulse-web run dev",
+    "lint": "npm --prefix netpulse-web run lint",
+    "typecheck": "npm --prefix netpulse-web run typecheck",
+    "test": "npm --prefix netpulse-web run test",
+    "build": "npm --prefix netpulse-web run build"
+  }
+}
