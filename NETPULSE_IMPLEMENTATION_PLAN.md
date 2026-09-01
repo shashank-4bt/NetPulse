@@ -1,8 +1,8 @@
 # NETPULSE Implementation Plan
 
-**Current stage:** 02 — Design system  
-**Date:** 2026-08-31  
-**Status:** Stage 01 complete. Stage 02 implemented in `netpulse-web/`.
+**Current stage:** 03 — Public website  
+**Date:** 2026-09-01  
+**Status:** Stages 01–03 implemented in `netpulse-web/`. Live measurement backends remain unavailable.
 
 This plan is derived from:
 

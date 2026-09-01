@@ -24,20 +24,21 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
   ),
   title: {
-    default: `${publicConfig.appName} · Design system`,
+    default: `${publicConfig.appName} — ${publicConfig.appTagline}`,
     template: `%s · ${publicConfig.appName}`,
   },
   description:
-    "NetPulse design system foundation for the Internet Health Intelligence Platform. Product diagnosis is not available yet.",
+    "NetPulse isolates whether an internet problem is your device, network, ISP, or the service — using measured evidence, not guesses.",
   robots: {
-    index: false,
-    follow: false,
+    index: true,
+    follow: true,
   },
   openGraph: {
-    title: `${publicConfig.appName} · Design system`,
+    title: `${publicConfig.appName} — ${publicConfig.appTagline}`,
     description:
-      "Foundational UI for NetPulse. No live internet health data is shown.",
+      "Find out what's actually broken. Evidence-based internet diagnosis.",
     type: "website",
+    siteName: publicConfig.appName,
   },
 };
 

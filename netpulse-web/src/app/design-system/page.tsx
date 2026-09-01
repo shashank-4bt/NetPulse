@@ -60,6 +60,7 @@ import {
 export const metadata: Metadata = {
   title: "Components",
   description: "NetPulse reusable component gallery. No live product data.",
+  robots: { index: false, follow: false },
 };
 
 export default function DesignSystemPage() {

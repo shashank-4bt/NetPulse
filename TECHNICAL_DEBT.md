@@ -124,6 +124,12 @@ The product source of truth was provided in the engineering contract (chat). In-
 
 ---
 
+## 8. Stage 03 notes
+
+- Public marketing routes are live. Status, outages, map, and service health use `getPublicHealthSnapshot()` and remain **unavailable**.
+- Diagnose form validates hosts (including private/loopback rejection) but does not send probes.
+- `/design-system` is noindex.
+
 ## 7. Stage 02 decisions
 
 - Web app lives in `netpulse-web/` because npm package names cannot contain capitals (`NetPulse`). Root scripts proxy into that package. This is a **PRODUCTION ENGINEERING REQUIREMENT**, not a product feature.
@@ -133,7 +139,7 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Framer Motion is used only in `LoadingState`, and honors `prefers-reduced-motion`.
 - MapLibre and ECharts are not installed yet: `ChartContainer` is a state wrapper with no fabricated series.
 - `/` and `/design-system` are foundation/gallery routes, not diagnostic product pages.
-- `robots.txt` disallows indexing until there is a real public product.
+- Stage 02 originally noindexed the whole site. Stage 03 allows public pages and noindexes `/design-system`.
 
 ## 6. Review rule
 

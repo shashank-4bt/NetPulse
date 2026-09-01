@@ -3,30 +3,22 @@ import Link from "next/link";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { PageContainer } from "@/components/layout/page-container";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { MOBILE_NAV, PRIMARY_NAV } from "@/lib/content/navigation";
 import { publicConfig } from "@/lib/config/public";
-
-const NAV_LINKS = [
-  { href: "/", label: "Foundations" },
-  { href: "/design-system", label: "Components" },
-] as const;
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm">
       <PageContainer className="flex h-14 items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link
-            href="/"
-            className="truncate text-sm font-semibold tracking-tight text-foreground"
-          >
-            {publicConfig.appName}
-          </Link>
-          <p className="hidden truncate text-xs text-muted-foreground md:block">
-            {publicConfig.appTagline}
-          </p>
-        </div>
-        <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
-          {NAV_LINKS.map((item) => (
+        <Link
+          href="/"
+          className="shrink-0 text-sm font-semibold tracking-tight text-foreground"
+        >
+          {publicConfig.appName}
+        </Link>
+        <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
+          {PRIMARY_NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -37,12 +29,17 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <Button
+            nativeButton={false}
+            className="hidden sm:inline-flex"
+            render={<Link href="/#diagnose" />}
+          >
+            Check My Internet
+          </Button>
           <ThemeToggle />
-          <MobileNav links={NAV_LINKS} />
+          <MobileNav links={MOBILE_NAV} />
         </div>
       </PageContainer>
     </header>
   );
 }
-
-export { NAV_LINKS };

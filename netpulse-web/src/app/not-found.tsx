@@ -9,15 +9,10 @@ export default function NotFound() {
       <PageContainer className="py-16">
         <h1 className="text-2xl font-semibold tracking-tight">Page not found</h1>
         <p className="mt-2 max-w-md text-muted-foreground">
-          This route does not exist. Product diagnosis pages have not been
-          implemented yet.
+          That URL is not part of the public site.
         </p>
-        <Button
-          className="mt-6"
-          nativeButton={false}
-          render={<Link href="/" />}
-        >
-          Back to foundations
+        <Button className="mt-6" nativeButton={false} render={<Link href="/" />}>
+          Back to home
         </Button>
       </PageContainer>
     </main>
