@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/contract"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/geo"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/id"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/incidents"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage"
@@ -104,6 +105,15 @@ func (s *Service) ListIncidents(ctx context.Context, query incidents.Query) ([]c
 	}
 	result := incidents.Filter(items, query)
 	return result.Items, &result.Page, nil, 200
+}
+
+func (s *Service) ListMapAggregates(ctx context.Context, query geo.Query) (*contract.MapAggregates, *contract.APIError, int) {
+	items, err := s.Store.ListIncidents(ctx)
+	if err != nil {
+		return nil, &contract.APIError{Code: "unavailable", Message: "map aggregate store is unavailable"}, 503
+	}
+	agg := geo.Aggregate(items, query)
+	return &agg, nil, 200
 }
 
 func (s *Service) GetIncident(ctx context.Context, incidentID string) (*contract.Incident, *contract.APIError, int) {

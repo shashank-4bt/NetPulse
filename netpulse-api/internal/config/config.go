@@ -28,7 +28,7 @@ func FromEnv() Config {
 		DatabaseURL:       os.Getenv("NETPULSE_DATABASE_URL"),
 		RedisURL:          os.Getenv("NETPULSE_REDIS_URL"),
 		ClickHouseURL:     os.Getenv("NETPULSE_CLICKHOUSE_URL"),
-		EngineVersion:     "0.7.0",
+		EngineVersion:     "0.8.0",
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/contract"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/diagnostics"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/geo"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/incidents"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage"
 )
@@ -32,6 +33,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/services/{slug}", s.getService)
 	mux.HandleFunc("GET /v1/incidents", s.listIncidents)
 	mux.HandleFunc("GET /v1/incidents/{id}", s.getIncident)
+	mux.HandleFunc("GET /v1/map/aggregates", s.mapAggregates)
 	return s.middleware(mux)
 }
 
@@ -135,6 +137,27 @@ func (s *Server) listIncidents(w http.ResponseWriter, r *http.Request) {
 	write(w, status, contract.Envelope{OK: true, Incidents: items, Page: page})
 }
 
+func (s *Server) mapAggregates(w http.ResponseWriter, r *http.Request) {
+	query := geo.ParseQuery(map[string]string{
+		"level":   r.URL.Query().Get("level"),
+		"parent":  r.URL.Query().Get("parent"),
+		"west":    r.URL.Query().Get("west"),
+		"south":   r.URL.Query().Get("south"),
+		"east":    r.URL.Query().Get("east"),
+		"north":   r.URL.Query().Get("north"),
+		"layers":  strings.Join(r.URL.Query()["layers"], ","),
+		"q":       r.URL.Query().Get("q"),
+		"service": r.URL.Query().Get("service"),
+		"limit":   r.URL.Query().Get("limit"),
+	})
+	agg, apiErr, status := s.Diagnostics.ListMapAggregates(r.Context(), query)
+	if apiErr != nil {
+		write(w, status, contract.Envelope{Error: apiErr})
+		return
+	}
+	write(w, status, contract.Envelope{OK: true, Map: agg})
+}
+
 func (s *Server) getIncident(w http.ResponseWriter, r *http.Request) {
 	item, apiErr, status := s.Diagnostics.GetIncident(r.Context(), r.PathValue("id"))
 	if apiErr != nil {
@@ -147,6 +170,10 @@ func (s *Server) getIncident(w http.ResponseWriter, r *http.Request) {
 func write(w http.ResponseWriter, status int, body contract.Envelope) {
 	if body.Incidents == nil {
 		body.Incidents = []contract.Incident{}
+	}
+	if body.Map != nil {
+		normalized := contract.NormalizeMap(*body.Map)
+		body.Map = &normalized
 	}
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(body)

@@ -181,6 +181,71 @@ func TestUnknownDiagnosisIsNotAFailedMeasurement(t *testing.T) {
 	}
 }
 
+func TestMapAggregatesAreEmptyWithoutGeography(t *testing.T) {
+	ts, _, _ := setup(t)
+	res, err := http.Get(ts.URL + "/v1/map/aggregates")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		t.Fatalf("map %d", res.StatusCode)
+	}
+	var env contract.Envelope
+	if err := json.NewDecoder(res.Body).Decode(&env); err != nil {
+		t.Fatal(err)
+	}
+	if !env.OK || env.Map == nil {
+		t.Fatal("map aggregates must be present")
+	}
+	if env.Map.Cells == nil || len(env.Map.Cells) != 0 {
+		t.Fatal("empty store must not invent map cells")
+	}
+	if env.Map.HasCoordinates {
+		t.Fatal("must not invent coordinates")
+	}
+	raw, _ := json.Marshal(env.Map)
+	var payload map[string]any
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := payload["measurements"]; ok {
+		t.Fatal("map payload must not include raw measurements")
+	}
+}
+
+func TestMapAggregatesDrillFromStoredIncidentsWithoutGeocoding(t *testing.T) {
+	ts, store, _ := setup(t)
+	store.ReplaceIncidents([]contract.Incident{{
+		ID:               "11111111-1111-4111-8111-111111111111",
+		Title:            "Elevated connectivity failures observed",
+		Severity:         "high",
+		Status:           "investigating",
+		Scope:            "youtube",
+		StartedAt:        "2026-09-01T04:00:00Z",
+		LastUpdatedAt:    "2026-09-01T05:00:00Z",
+		AffectedServices: []string{"youtube"},
+		Regions:          []string{"eu-west"},
+		Networks:         []string{"AS64500"},
+		SampleCount:      3,
+	}})
+	res, err := http.Get(ts.URL + "/v1/map/aggregates?parent=region:eu-west&level=network&layers=network")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	var env contract.Envelope
+	if err := json.NewDecoder(res.Body).Decode(&env); err != nil {
+		t.Fatal(err)
+	}
+	if env.Map == nil || len(env.Map.Cells) != 1 || env.Map.Cells[0].ID != "network:AS64500" {
+		t.Fatal("region click must yield a network summary from stored labels")
+	}
+	if env.Map.Cells[0].Lon != nil || env.Map.HasCoordinates {
+		t.Fatal("must not geocode region labels")
+	}
+}
+
 func TestUnknownIncidentIsNotInvented(t *testing.T) {
 	ts, _, _ := setup(t)
 	res, err := http.Get(ts.URL + "/v1/incidents/00000000-0000-4000-8000-000000000000")

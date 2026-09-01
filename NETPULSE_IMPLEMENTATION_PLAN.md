@@ -1,8 +1,8 @@
 # NETPULSE Implementation Plan
 
-**Current stage:** 07 — Service and incident intelligence  
+**Current stage:** 08 — Global internet health map  
 **Date:** 2026-09-01  
-**Status:** Stages 01–07 implemented. Service, status, outage, and incident pages render stored records only. Unmeasured health, empty incident feeds, and charts stay empty or unavailable.
+**Status:** Stages 01–08 implemented. `/map` renders MapLibre with aggregated cells only. Empty stores stay empty; the basemap is not a health heatmap.
 
 This plan is derived from:
 
@@ -158,12 +158,14 @@ Stages are sequential. Do not skip foundation. Do not implement a later stage's 
 - ClickHouse when volume justifies it (Postgres acceptable until then).
 - Maps/charts with empty and insufficient-evidence states; lazy-loaded.
 
-### Stage 08 — Accounts, privacy, developer/business monitoring
+### Stage 08 — Global internet health map *(shipped in this repo as Stage 08)*
 
-- Sessions, device list (user-visible, minimal).
-- Telemetry controls.
-- Developer/business monitoring views **only** on real data or explicit unavailable.
-- Retention and deletion.
+- MapLibre GL JS on `/map`, lazy-loaded.
+- Aggregates from stored incidents only: clustering, viewport queries, 250-cell cap.
+- Hierarchy World → Country → Region → Network/ASN → Service. Layers do not invent health colors.
+- Table alternative, mobile summary/filter, no precise individual locations.
+
+The original plan listed accounts here. Accounts remain deferred.
 
 ### Stage 09 — Hardening & operations
 
@@ -231,4 +233,4 @@ Do not mark a stage complete with known critical issues.
 
 ## 7. Next recommended stage
 
-**Stage 02 — Web foundation:** scaffold Next.js with strict TypeScript, Tailwind, honest unavailable/empty states, centralized API adapter, and runnable lint/test/build. No diagnostic theater.
+**Stage 09 — Hardening & operations:** CI, Compose for local stores, and operational budgets. Accounts and developer monitoring remain deferred until those surfaces have real data.

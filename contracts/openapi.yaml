@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: NetPulse API
-  version: 0.7.0
-  description: Versioned JSON contract for diagnoses, services, and incidents. No invented health.
+  version: 0.8.0
+  description: Versioned JSON contract for diagnoses, services, incidents, and map aggregates. No invented health.
 servers:
   - url: http://localhost:8080
 paths:
@@ -115,6 +115,50 @@ paths:
           description: Stored incident
         "404":
           description: Not found
+  /v1/map/aggregates:
+    get:
+      summary: Coarse geographic aggregates
+      description: >
+        Returns clustered, viewport-capped cells derived from stored incidents.
+        Never includes raw measurements or precise individual locations.
+        Coordinates, when present, are snapped to 1 degree.
+      parameters:
+        - in: query
+          name: level
+          schema: { type: string, enum: [world, country, region, network, service] }
+        - in: query
+          name: parent
+          schema: { type: string }
+        - in: query
+          name: west
+          schema: { type: number }
+        - in: query
+          name: south
+          schema: { type: number }
+        - in: query
+          name: east
+          schema: { type: number }
+        - in: query
+          name: north
+          schema: { type: number }
+        - in: query
+          name: layers
+          schema: { type: string }
+          description: Comma-separated global,regional,network,service,incidents
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: service
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, maximum: 250 }
+      responses:
+        "200":
+          description: Aggregated cells only. Empty means none stored.
+        "503":
+          description: Store unavailable
 components:
   schemas:
     Error:

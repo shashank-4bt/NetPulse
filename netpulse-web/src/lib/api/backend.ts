@@ -1,4 +1,6 @@
 import type { DiagnosticReport } from "@/domain/diagnostic";
+import type { MapAggregates, MapQuery, MapViewport } from "@/domain/map";
+import { emptyMapAggregates, MAP_CELL_LIMIT } from "@/domain/map";
 import type {
   PublicIncidentRecord,
   ServiceIntelligence,
@@ -78,6 +80,7 @@ type Envelope = {
     version?: string;
     storage?: Record<string, string>;
   };
+  map?: Record<string, unknown>;
   error?: { code?: string; message?: string };
 };
 
@@ -243,6 +246,104 @@ export async function getBackendServices(): Promise<
     return asFailure(status, body);
   }
   return { ok: true, services: body.services ?? [] };
+}
+
+export async function getBackendMapAggregates(
+  query: Pick<MapQuery, "level" | "parent" | "service" | "q" | "layers"> & {
+    viewport?: MapViewport | null;
+    limit?: number;
+  }
+): Promise<{ ok: true; aggregates: MapAggregates } | ApiFailure> {
+  const params = new URLSearchParams();
+  params.set("level", query.level);
+  if (query.parent) {
+    params.set("parent", query.parent);
+  }
+  if (query.service) {
+    params.set("service", query.service);
+  }
+  if (query.q) {
+    params.set("q", query.q);
+  }
+  if (query.layers.length) {
+    params.set("layers", query.layers.join(","));
+  }
+  if (query.limit) {
+    params.set("limit", String(query.limit));
+  }
+  if (query.viewport) {
+    params.set("west", String(query.viewport.west));
+    params.set("south", String(query.viewport.south));
+    params.set("east", String(query.viewport.east));
+    params.set("north", String(query.viewport.north));
+  }
+  const result = await request(`/v1/map/aggregates?${params.toString()}`);
+  if (isApiFailure(result)) {
+    return result;
+  }
+  const { status, body } = result;
+  if (status >= 400) {
+    return asFailure(status, body);
+  }
+  if (body.map && "measurements" in body.map) {
+    return apiFailure(
+      "internal",
+      "The map response included raw measurements and was rejected.",
+      502
+    );
+  }
+  return { ok: true, aggregates: mapMapAggregates(body.map) };
+}
+
+function mapMapAggregates(value: Envelope["map"]): MapAggregates {
+  const empty = emptyMapAggregates("No coarse geographic aggregates are stored.");
+  if (!value || typeof value !== "object") {
+    return empty;
+  }
+  const record = value as Record<string, unknown>;
+  const cells = Array.isArray(record.cells) ? record.cells.map(mapMapCell) : [];
+  const refs = Array.isArray(record.incidentRefs)
+    ? record.incidentRefs.map(mapMapIncidentRef)
+    : [];
+  return {
+    level: typeof record.level === "string" ? record.level : empty.level,
+    parentId: typeof record.parentId === "string" ? record.parentId : null,
+    cells,
+    incidentRefs: refs,
+    totalSamples: typeof record.totalSamples === "number" ? record.totalSamples : 0,
+    limit: typeof record.limit === "number" ? record.limit : MAP_CELL_LIMIT,
+    truncated: Boolean(record.truncated),
+    precision: typeof record.precision === "string" ? record.precision : "none",
+    reason: typeof record.reason === "string" ? record.reason : empty.reason,
+    hasCoordinates: Boolean(record.hasCoordinates),
+  };
+}
+
+function mapMapCell(value: unknown): MapAggregates["cells"][number] {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  return {
+    id: String(record.id ?? ""),
+    level: String(record.level ?? ""),
+    label: String(record.label ?? ""),
+    parentId: typeof record.parentId === "string" ? record.parentId : null,
+    lon: typeof record.lon === "number" ? record.lon : null,
+    lat: typeof record.lat === "number" ? record.lat : null,
+    sampleCount: typeof record.sampleCount === "number" ? record.sampleCount : 0,
+    status: String(record.status ?? "not_measured"),
+    summary: String(record.summary ?? ""),
+    layer: String(record.layer ?? ""),
+    childCount: typeof record.childCount === "number" ? record.childCount : 0,
+  };
+}
+
+function mapMapIncidentRef(value: unknown): MapAggregates["incidentRefs"][number] {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  return {
+    id: String(record.id ?? ""),
+    title: String(record.title ?? ""),
+    coarseRegion: String(record.coarseRegion ?? ""),
+    sampleCount: typeof record.sampleCount === "number" ? record.sampleCount : 0,
+  };
 }
 
 function mapIntelligence(value: Envelope["intelligence"]): ServiceIntelligence {

@@ -1,9 +1,9 @@
 package contract
 
 const (
-	ModelVersion       = "0.7.0"
-	EngineVersion      = "0.7.0"
-	RuleVersion        = "0.7.0-service-incident"
+	ModelVersion       = "0.8.0"
+	EngineVersion      = "0.8.0"
+	RuleVersion        = "0.8.0-map-aggregates"
 	MeasurementVersion = "0.6.0-dns-tcp-tls-http"
 	ObservedFailures   = "Elevated connectivity failures observed"
 	ConfidenceCaveat   = "Confidence is not certainty. A level or percentage can be wrong and must not be treated as proof."
@@ -160,6 +160,7 @@ type Envelope struct {
 	Incident     *Incident            `json:"incident,omitempty"`
 	Page         *Page                `json:"page,omitempty"`
 	Health       *Health              `json:"health,omitempty"`
+	Map          *MapAggregates       `json:"map,omitempty"`
 	Error        *APIError            `json:"error,omitempty"`
 }
 
@@ -240,6 +241,40 @@ type Health struct {
 	Storage map[string]string `json:"storage"`
 }
 
+type MapCell struct {
+	ID          string   `json:"id"`
+	Level       string   `json:"level"`
+	Label       string   `json:"label"`
+	ParentID    *string  `json:"parentId,omitempty"`
+	Lon         *float64 `json:"lon,omitempty"`
+	Lat         *float64 `json:"lat,omitempty"`
+	SampleCount int      `json:"sampleCount"`
+	Status      string   `json:"status"`
+	Summary     string   `json:"summary"`
+	Layer       string   `json:"layer"`
+	ChildCount  int      `json:"childCount"`
+}
+
+type MapIncidentRef struct {
+	ID           string `json:"id"`
+	Title        string `json:"title"`
+	CoarseRegion string `json:"coarseRegion"`
+	SampleCount  int    `json:"sampleCount"`
+}
+
+type MapAggregates struct {
+	Level          string           `json:"level"`
+	ParentID       *string          `json:"parentId,omitempty"`
+	Cells          []MapCell        `json:"cells"`
+	IncidentRefs   []MapIncidentRef `json:"incidentRefs"`
+	TotalSamples   int              `json:"totalSamples"`
+	Limit          int              `json:"limit"`
+	Truncated      bool             `json:"truncated"`
+	Precision      string           `json:"precision"`
+	Reason         string           `json:"reason"`
+	HasCoordinates bool             `json:"hasCoordinates"`
+}
+
 func EmptyConfidence() Confidence {
 	return Confidence{
 		SupportingEvidenceIDs:    []string{},
@@ -269,6 +304,25 @@ func EmptyIntelligence() ServiceIntelligence {
 		NetworkHealth:     []SliceObservation{},
 		RecentIncidentIDs: []string{},
 	}
+}
+
+func NormalizeMap(agg MapAggregates) MapAggregates {
+	if agg.Cells == nil {
+		agg.Cells = []MapCell{}
+	}
+	if agg.IncidentRefs == nil {
+		agg.IncidentRefs = []MapIncidentRef{}
+	}
+	if agg.Limit <= 0 {
+		agg.Limit = 250
+	}
+	if agg.Precision == "" {
+		agg.Precision = "none"
+	}
+	if agg.Level == "" {
+		agg.Level = "world"
+	}
+	return agg
 }
 
 func NormalizeIncident(item Incident) Incident {

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { getBackendIncidents, getDiagnosis, isApiConfigured, postDiagnosis } from "@/lib/api/backend";
+import { getBackendIncidents, getBackendMapAggregates, getDiagnosis, isApiConfigured, postDiagnosis } from "@/lib/api/backend";
 
 describe("backend client", () => {
   afterEach(() => {
@@ -114,6 +114,43 @@ describe("backend client", () => {
     if (result.ok) {
       expect(result.incidents).toEqual([]);
       expect(result.total).toBe(0);
+    }
+  });
+
+  it("maps empty map aggregates without inventing coordinates", async () => {
+    vi.stubEnv("NETPULSE_API_BASE_URL", "http://api.test");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(
+          JSON.stringify({
+            ok: true,
+            map: {
+              cells: [],
+              incidentRefs: [],
+              totalSamples: 0,
+              limit: 250,
+              truncated: false,
+              precision: "none",
+              reason: "empty",
+              hasCoordinates: false,
+            },
+          }),
+          { status: 200 }
+        )
+      )
+    );
+    const result = await getBackendMapAggregates({
+      level: "world",
+      parent: "",
+      service: "",
+      q: "",
+      layers: ["global"],
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.aggregates.cells).toEqual([]);
+      expect(result.aggregates.hasCoordinates).toBe(false);
     }
   });
 });

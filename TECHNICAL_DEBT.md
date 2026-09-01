@@ -83,7 +83,7 @@ The product source of truth was provided in the engineering contract (chat). In-
 | Observation | Why it is not debt |
 | --- | --- |
 | No Kafka, Neo4j, ECS, Terraform | Intentionally deferred; simplest scalable path |
-| No MapLibre/ECharts yet | No data to display; adding them now would invite fake charts |
+| ECharts not installed | No measured series to chart; MapLibre is used on `/map` with empty overlays |
 | No shadcn components | No UI stage yet |
 | Duplicate components / dead code / unused deps | No source to contain them |
 | Git history contains a removed policy file | Intentional; files were deleted after identity verification |
@@ -121,7 +121,7 @@ The product source of truth was provided in the engineering contract (chat). In-
 | ID | Sev | Item | Target stage |
 | --- | --- | --- | --- |
 | TD-004 | P1 | User-path isolation still cannot be inferred from worker vantage alone | later probes |
-| TD-007 | P1 | No auth (when required) | 08 |
+| TD-007 | P1 | No auth (when required) | later |
 | TD-008 | P2 | No CI | 09 |
 | TD-009 | P2 | No local Compose for Postgres/Redis | 09 |
 | TD-010 | P2 | Product spec only in chat + Stage 01 docs | later docs |
@@ -172,6 +172,15 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Incident documents include evidence, hypotheses, confidence, and a Detected→Resolved timeline. A single recovered measurement cannot mark resolved.
 - Attribution prefers “Elevated connectivity failures observed” unless isolation evidence exists. Affected-user counts stay null.
 
+## 13. Stage 08 notes
+
+- MapLibre GL JS v6 on `/map` is lazy-loaded. Production build uses webpack because Turbopack cannot resolve MapLibre's dynamic worker URL. Workers are copied into `public/maplibre` before `dev`/`build`.
+- `GET /v1/map/aggregates` returns clustered, viewport-capped cells. Raw measurements are never included. Coordinates, when present, are snapped to 1 degree.
+- Empty stores render a basemap plus an equivalent table. Country polygons are not colored. Region labels from incidents are not geocoded.
+- Hierarchy: World → Country → Region → Network/ASN → Service. Click paths match that summary chain. Service cells open `/service/[slug]`.
+- Layers: Global, Regional, Network, Service, Incidents. Status is not_measured or insufficient_evidence until a geo series exists.
+- Next.js BFF `GET /api/map/aggregates` proxies viewport queries using server-side `NETPULSE_API_BASE_URL`.
+
 ## 7. Stage 02 decisions
 
 - Web app lives in `netpulse-web/` because npm package names cannot contain capitals (`NetPulse`). Root scripts proxy into that package. This is a **PRODUCTION ENGINEERING REQUIREMENT**, not a product feature.
@@ -179,7 +188,7 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Light/dark via `next-themes` class strategy (not `prefers-color-scheme` alone).
 - Status/severity/confidence always include icon + text.
 - Framer Motion is used only in `LoadingState`, and honors `prefers-reduced-motion`.
-- MapLibre and ECharts are not installed yet: `ChartContainer` is a state wrapper with no fabricated series.
+- MapLibre is installed for `/map` and lazy-loaded. ECharts is not installed. `ChartContainer` remains a state wrapper with no fabricated series.
 - `/` and `/design-system` are foundation/gallery routes, not diagnostic product pages.
 - Stage 02 originally noindexed the whole site. Stage 03 allows public pages and noindexes `/design-system`.
 

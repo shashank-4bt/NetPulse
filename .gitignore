@@ -67,3 +67,6 @@ override.tf.json
 
 # Docker local volumes
 docker-data/
+
+# MapLibre workers copied from node_modules (see netpulse-web/scripts/copy-maplibre-worker.cjs)
+netpulse-web/public/maplibre/
