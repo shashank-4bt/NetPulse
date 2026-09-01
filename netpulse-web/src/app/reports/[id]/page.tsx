@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DiagnoseRunView } from "@/features/diagnose/diagnose-run-view";
 import { SupportReportView } from "@/features/intelligence/support-report-view";
 import { parseReportId } from "@/lib/reports/id";
-import { getReport } from "@/lib/reports/store";
+import { loadDiagnosis } from "@/lib/reports/load";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +24,7 @@ export async function generateMetadata({
 }: ReportPageProps): Promise<Metadata> {
   const { id } = await params;
   const reportId = parseReportId(id);
-  const report = reportId ? getReport(reportId) : null;
+  const report = reportId ? (await loadDiagnosis(reportId)).report : null;
 
   return {
     title: report ? `Report · ${report.target.hostname}` : "Report",
@@ -41,7 +41,8 @@ export default async function ReportPage({ params }: ReportPageProps) {
     notFound();
   }
 
-  const report = getReport(reportId);
+  const loaded = await loadDiagnosis(reportId);
+  const report = loaded.report;
 
   return (
     <main id="main-content" className="flex-1">
@@ -51,13 +52,17 @@ export default async function ReportPage({ params }: ReportPageProps) {
         description={
           report
             ? "Shareable diagnostic report for web, support, future PDF, and a future JSON API. Empty fields mean the engine did not produce those values."
-            : "This id is well-formed, but the report is not in this process."
+            : loaded.pending
+              ? "The diagnosis is queued or running. Refresh when workers finish. No substitute result is shown while it is pending."
+              : loaded.backendError
+                ? loaded.backendError
+                : "This id is well-formed, but no report is stored."
         }
       />
       <PageContainer className="space-y-10 py-10">
         <DevelopmentBanner
-          title="Process-local store"
-          description="Reports live in memory on this Node process. They disappear on restart and are not shared across instances. PostgreSQL is not connected."
+          title="Report store"
+          description="If NETPULSE_API_BASE_URL is set, this page reads GET /v1/diagnoses/:id. Otherwise it uses the process-local Next.js store."
         />
         {report ? (
           <Tabs defaultValue="web">
@@ -72,6 +77,20 @@ export default async function ReportPage({ params }: ReportPageProps) {
               <SupportReportView report={report} />
             </TabsContent>
           </Tabs>
+        ) : loaded.pending ? (
+          <EmptyState
+            title="Diagnosis in progress"
+            description="Workers are still measuring from a NetPulse vantage. This page does not invent a result while the job is queued or running."
+          />
+        ) : loaded.backendError ? (
+          <EmptyState
+            title="Report unavailable"
+            description={loaded.backendError}
+          >
+            <Button nativeButton={false} render={<Link href="/diagnose" />}>
+              Start a diagnosis
+            </Button>
+          </EmptyState>
         ) : (
           <EmptyState
             title="Report not found"

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { startDiagnosis } from "@/features/diagnose/start-diagnosis";
 import { toShareableReport } from "@/features/intelligence/shareable-report";
-import { getReport } from "@/lib/reports/store";
+import { loadDiagnosis } from "@/lib/reports/load";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const report = getReport(result.reportId);
+  const report = (await loadDiagnosis(result.reportId)).report;
   if (!report) {
     return NextResponse.json(
       {

@@ -8,8 +8,8 @@ import { SectionHeading } from "@/components/public/section-heading";
 import { Button } from "@/components/ui/button";
 import { getPublicHealthSnapshot } from "@/lib/api/public-health";
 
-export function HealthSection() {
-  const health = getPublicHealthSnapshot();
+export async function HealthSection() {
+  const health = await getPublicHealthSnapshot();
 
   return (
     <SectionContainer labelledBy="health-heading" className="bg-muted/20">

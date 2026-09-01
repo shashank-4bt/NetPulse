@@ -8,8 +8,8 @@ import { SectionHeading } from "@/components/public/section-heading";
 import { Button } from "@/components/ui/button";
 import { getPublicHealthSnapshot } from "@/lib/api/public-health";
 
-export function IncidentsSection() {
-  const health = getPublicHealthSnapshot();
+export async function IncidentsSection() {
+  const health = await getPublicHealthSnapshot();
 
   return (
     <SectionContainer labelledBy="incidents-heading">

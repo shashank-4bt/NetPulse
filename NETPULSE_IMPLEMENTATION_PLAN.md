@@ -1,8 +1,8 @@
 # NETPULSE Implementation Plan
 
-**Current stage:** 05 — Diagnostic intelligence presentation  
+**Current stage:** 06 — Backend integration  
 **Date:** 2026-09-01  
-**Status:** Stages 01–03 implemented in `netpulse-web/`. Live measurement backends remain unavailable.
+**Status:** Stages 01–06 implemented. `netpulse-web` talks to `netpulse-api` when `NETPULSE_API_BASE_URL` is set. Default stores are memory adapters; Postgres/ClickHouse/Redis drivers are unlinked until a DSN is supplied.
 
 This plan is derived from:
 

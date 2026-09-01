@@ -14,6 +14,8 @@ import {
 } from "@/components/home/method-sections";
 import { ServicesSection } from "@/components/home/services-section";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Is the internet down?",
   description:

@@ -7,6 +7,9 @@
     "lint": "npm --prefix netpulse-web run lint",
     "typecheck": "npm --prefix netpulse-web run typecheck",
     "test": "npm --prefix netpulse-web run test",
-    "build": "npm --prefix netpulse-web run build"
+    "test:api": "go -C netpulse-api test ./...",
+    "test:all": "npm test && npm run test:api",
+    "build": "npm --prefix netpulse-web run build",
+    "build:api": "go -C netpulse-api build -o bin/api ./cmd/api && go -C netpulse-api build -o bin/worker ./cmd/worker"
   }
 }

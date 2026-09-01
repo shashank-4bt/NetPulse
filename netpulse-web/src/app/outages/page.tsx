@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/table";
 import { getPublicHealthSnapshot } from "@/lib/api/public-health";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Outages",
   description:
@@ -21,8 +23,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/outages" },
 };
 
-export default function OutagesPage() {
-  const health = getPublicHealthSnapshot();
+export default async function OutagesPage() {
+  const health = await getPublicHealthSnapshot();
 
   return (
     <main id="main-content" className="flex-1">

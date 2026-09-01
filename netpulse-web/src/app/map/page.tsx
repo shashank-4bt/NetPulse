@@ -6,6 +6,8 @@ import { DevelopmentBanner } from "@/components/public/development-banner";
 import { PageHero } from "@/components/public/page-hero";
 import { getPublicHealthSnapshot } from "@/lib/api/public-health";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Map",
   description:
@@ -13,8 +15,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/map" },
 };
 
-export default function MapPage() {
-  const health = getPublicHealthSnapshot();
+export default async function MapPage() {
+  const health = await getPublicHealthSnapshot();
 
   return (
     <main id="main-content" className="flex-1">

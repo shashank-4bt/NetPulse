@@ -1,27 +1,53 @@
-/**
- * Public health adapter.
- * Until workers and stores exist, every query is unavailable.
- * Callers must not invent operational or incident values.
- */
+import { getBackendIncidents, isApiConfigured } from "@/lib/api/backend";
 
-export type PublicDataState = "unavailable";
+export type PublicDataState = "unavailable" | "empty" | "ready";
+
+export type PublicIncident = {
+  id: string;
+  title: string;
+  scope: string;
+  startedAt: string;
+};
 
 export type PublicHealthSnapshot = {
   state: PublicDataState;
   reason: string;
-  incidents: [];
+  incidents: PublicIncident[];
   regions: [];
   measuredAt: null;
 };
 
-export function getPublicHealthSnapshot(): PublicHealthSnapshot {
+export async function getPublicHealthSnapshot(): Promise<PublicHealthSnapshot> {
+  if (!isApiConfigured()) {
+    return {
+      state: "unavailable",
+      reason:
+        "NETPULSE_API_BASE_URL is not set. NetPulse will not display invented service health, outages, or map series.",
+      incidents: [],
+      regions: [],
+      measuredAt: null,
+    };
+  }
+
+  const result = await getBackendIncidents();
+  if (!result.ok) {
+    return {
+      state: "unavailable",
+      reason: result.message,
+      incidents: [],
+      regions: [],
+      measuredAt: null,
+    };
+  }
+
   return {
-    state: "unavailable",
+    state: result.incidents.length === 0 ? "empty" : "ready",
     reason:
-      "Measurement workers, PostgreSQL, and ClickHouse are not connected. NetPulse will not display invented service health, outages, or map series.",
-    incidents: [],
+      result.incidents.length === 0
+        ? "The API store contains no incidents. That is not a claim that the internet is healthy."
+        : "Incidents are listed only as stored records. Regional health is still unmeasured.",
+    incidents: result.incidents,
     regions: [],
     measuredAt: null,
   };
 }
-

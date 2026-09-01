@@ -110,6 +110,9 @@ The product source of truth was provided in the engineering contract (chat). In-
 | TD-001 | Missing `.gitignore` for secrets and build artifacts | 01 |
 | TD-002 | No application / web toolchain | 02 |
 | TD-003 | Web `.env.example` | 02 |
+| TD-003b | API env / config schema | 06 |
+| TD-005 | No API or workers | 06 |
+| TD-006 | Worker SSRF / redirect revalidation | 06 |
 
 ---
 
@@ -117,15 +120,12 @@ The product source of truth was provided in the engineering contract (chat). In-
 
 | ID | Sev | Item | Target stage |
 | --- | --- | --- | --- |
-| TD-003b | P1 | API env / config schema | later API |
-| TD-004 | P1 | Engine does not yet emit measured facts into the Stage 05 models | workers |
-| TD-005 | P1 | No API or workers | 05 |
-| TD-006 | P1 | No worker SSRF / redirect revalidation | 05 |
+| TD-004 | P1 | User-path isolation still cannot be inferred from worker vantage alone | later probes |
 | TD-007 | P1 | No auth (when required) | 08 |
 | TD-008 | P2 | No CI | 09 |
 | TD-009 | P2 | No local Compose for Postgres/Redis | 09 |
 | TD-010 | P2 | Product spec only in chat + Stage 01 docs | later docs |
-| TD-011 | P1 | Diagnostic reports are process-local (in-memory Map) | persistent store |
+| TD-011 | P1 | Default stores are process-local memory adapters until DSN drivers are linked | persistent store |
 
 ---
 
@@ -154,6 +154,15 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Reports include `diagnosticEngineVersion`, `ruleVersion`, `measurementVersion`, and `modelVersion`.
 - Shareable document format `netpulse.diagnostic-report.v1` is intended for web, support, future PDF, and a future JSON API.
 - `POST /api/reports` and `GET /api/reports/[id]` return that document. The in-memory Map is stored on `globalThis` so route handlers and RSC share it in one process.
+
+## 11. Stage 06 notes
+
+- Go module `netpulse-api` exposes `POST/GET /v1/diagnoses`, `GET /v1/health`, `GET /v1/services`, `GET /v1/services/:slug`, `GET /v1/incidents`.
+- Workers are a separate binary and can also run embedded in the API process. HTTP handlers enqueue jobs; they do not probe.
+- Measurements are DNS, TCP, TLS, and HTTP from the worker vantage, after SSRF host + resolved-IP checks and redirect revalidation.
+- Storage ports exist for PostgreSQL, ClickHouse, and Redis. Default runtime is the memory adapter. Schema is in `netpulse-api/schema/postgres.sql`.
+- Frontend uses `NETPULSE_API_BASE_URL`. If unset or the API fails, UI stays unavailable/empty. No production fake fallback data.
+- Shared contract: `contracts/openapi.yaml` plus matching Go/TS types.
 
 ## 7. Stage 02 decisions
 

@@ -1,0 +1,82 @@
+package main
+
+import (
+	"context"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/api"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/diagnostics"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/logging"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage/clickhouse"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage/memory"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage/postgres"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage/redisx"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/worker"
+)
+
+func main() {
+	cfg := config.FromEnv()
+	log := logging.New("api")
+	store := memory.New()
+	storageInfo := map[string]string{
+		"postgres":   store.Backend(),
+		"clickhouse": store.Backend(),
+		"redis":      store.Backend(),
+	}
+
+	if _, err := postgres.Open(cfg.DatabaseURL); err == nil {
+		storageInfo["postgres"] = "postgres"
+	} else if cfg.DatabaseURL != "" {
+		log.Warn("postgres adapter not linked; using memory", "err", err)
+	}
+	if _, err := clickhouse.Open(cfg.ClickHouseURL); err == nil {
+		storageInfo["clickhouse"] = "clickhouse"
+	} else if cfg.ClickHouseURL != "" {
+		log.Warn("clickhouse adapter not linked; using memory", "err", err)
+	}
+	if _, err := redisx.Open(cfg.RedisURL); err == nil {
+		storageInfo["redis"] = "redis"
+	} else if cfg.RedisURL != "" {
+		log.Warn("redis adapter not linked; using memory", "err", err)
+	}
+
+	svc := &diagnostics.Service{Store: store, Queue: store}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	if cfg.WorkerEmbedded {
+		w := &worker.Worker{
+			Store:        store,
+			Measurements: store,
+			Queue:        store,
+			Runner:       worker.DefaultRunner(),
+			Log:          log,
+			Concurrency:  cfg.WorkerConcurrency,
+		}
+		w.Start(ctx)
+		log.Info("embedded worker started", "concurrency", cfg.WorkerConcurrency)
+	}
+
+	server := &api.Server{
+		Cfg:         cfg,
+		Log:         log,
+		Diagnostics: svc,
+		Limiter:     store,
+		StorageInfo: storageInfo,
+	}
+	httpServer := api.NewHTTPServer(cfg.Addr, server.Handler())
+	go func() {
+		<-ctx.Done()
+		_ = httpServer.Shutdown(context.Background())
+	}()
+	log.Info("api listening", "addr", cfg.Addr)
+	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Error("api stopped", slog.Any("err", err))
+		os.Exit(1)
+	}
+}

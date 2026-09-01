@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { toShareableReport } from "@/features/intelligence/shareable-report";
 import { parseReportId } from "@/lib/reports/id";
-import { getReport } from "@/lib/reports/store";
+import { loadDiagnosis } from "@/lib/reports/load";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,8 @@ export async function GET(_request: Request, context: ReportApiContext) {
     );
   }
 
-  const report = getReport(reportId);
+  const loaded = await loadDiagnosis(reportId);
+  const report = loaded.report;
   if (!report) {
     return NextResponse.json(
       {

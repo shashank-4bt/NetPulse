@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: NetPulse API
+  version: 0.6.0
+  description: Versioned JSON contract for diagnoses, services, and incidents. No invented health.
+servers:
+  - url: http://localhost:8080
+paths:
+  /v1/health:
+    get:
+      summary: Process health
+      responses:
+        "200":
+          description: API process is up
+  /v1/diagnoses:
+    post:
+      summary: Create a diagnosis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target]
+              properties:
+                target:
+                  type: string
+      responses:
+        "201":
+          description: Queued
+        "400":
+          description: Validation error
+        "403":
+          description: SSRF blocked
+        "429":
+          description: Rate limited
+  /v1/diagnoses/{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Diagnosis
+        "404":
+          description: Not found
+  /v1/services:
+    get:
+      responses:
+        "200":
+          description: Editorial catalog, not live health
+  /v1/services/{slug}:
+    get:
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Catalog entry
+        "404":
+          description: Not found
+  /v1/incidents:
+    get:
+      responses:
+        "200":
+          description: Stored incidents only. Empty means none recorded.
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+            [validation_error, unauthorized, forbidden, not_found, rate_limited, unavailable, ssrf_blocked, internal]
+        message:
+          type: string
+    DiagnosisStatus:
+      type: string
+      enum:
+        [queued, running, complete, partial, failed, unavailable, insufficient_evidence]

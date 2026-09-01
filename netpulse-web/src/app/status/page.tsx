@@ -17,6 +17,8 @@ import {
 import { getPublicHealthSnapshot } from "@/lib/api/public-health";
 import { SERVICE_CATALOG } from "@/lib/content/services";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Status",
   description:
@@ -24,8 +26,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/status" },
 };
 
-export default function StatusPage() {
-  const health = getPublicHealthSnapshot();
+export default async function StatusPage() {
+  const health = await getPublicHealthSnapshot();
 
   return (
     <main id="main-content" className="flex-1">
