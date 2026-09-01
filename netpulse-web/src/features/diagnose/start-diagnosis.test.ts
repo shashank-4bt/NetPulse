@@ -24,5 +24,7 @@ describe("startDiagnosis", () => {
     expect(report?.confidence.percent).toBeNull();
     expect(report?.target.hostname).toBe("youtube.com");
     expect(report?.engineVersion).toBeTruthy();
+    expect(report?.versions.modelVersion).toBe("0.5.0");
+    expect(report?.insufficientEvidence.determined).toBe(true);
   });
 });

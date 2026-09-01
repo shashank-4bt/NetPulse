@@ -1,6 +1,6 @@
 # NETPULSE Implementation Plan
 
-**Current stage:** 03 — Public website  
+**Current stage:** 05 — Diagnostic intelligence presentation  
 **Date:** 2026-09-01  
 **Status:** Stages 01–03 implemented in `netpulse-web/`. Live measurement backends remain unavailable.
 

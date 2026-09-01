@@ -118,7 +118,7 @@ The product source of truth was provided in the engineering contract (chat). In-
 | ID | Sev | Item | Target stage |
 | --- | --- | --- | --- |
 | TD-003b | P1 | API env / config schema | later API |
-| TD-004 | P1 | Full diagnostic evidence model (beyond display taxonomies + report types) | workers |
+| TD-004 | P1 | Engine does not yet emit measured facts into the Stage 05 models | workers |
 | TD-005 | P1 | No API or workers | 05 |
 | TD-006 | P1 | No worker SSRF / redirect revalidation | 05 |
 | TD-007 | P1 | No auth (when required) | 08 |
@@ -143,6 +143,17 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Step progress is a count of complete / unavailable / failed / total. No invented percentages.
 - ECharts is not installed. Technical details use expandable blocks; `ChartContainer` stays `unavailable`.
 - `robots.txt` disallows `/reports`. Sitemap includes `/diagnose` only.
+
+## 10. Stage 05 notes
+
+- Presentation models now include Measurement, Evidence, Hypothesis, AlternativeHypothesis, Confidence, Recommendation, VerificationStep, EscalationCondition, and DiagnosticReport.
+- Evidence graph is Device → Wi-Fi → Router → ISP → Route → CDN → Service. Nodes are interactive and stay **not measured** until workers persist facts. Unknown is never converted to failed.
+- Confidence always carries a no-certainty caveat. Value and level render only when supplied.
+- Recommendations require action, reason, risk, expected result, and verification. `autoExecute` is always false.
+- Insufficient evidence is a first-class result with a next recommended check.
+- Reports include `diagnosticEngineVersion`, `ruleVersion`, `measurementVersion`, and `modelVersion`.
+- Shareable document format `netpulse.diagnostic-report.v1` is intended for web, support, future PDF, and a future JSON API.
+- `POST /api/reports` and `GET /api/reports/[id]` return that document. The in-memory Map is stored on `globalThis` so route handlers and RSC share it in one process.
 
 ## 7. Stage 02 decisions
 

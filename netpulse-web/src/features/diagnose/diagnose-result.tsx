@@ -2,12 +2,11 @@ import Link from "next/link";
 
 import { EvidenceItem } from "@/components/data/evidence-item";
 import { EmptyState } from "@/components/feedback/empty-state";
-import { InsufficientEvidenceState } from "@/components/feedback/insufficient-evidence-state";
 import { UnavailableState } from "@/components/feedback/unavailable-state";
-import { ConfidenceBadge } from "@/components/status/confidence-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { DiagnosticOutcome, DiagnosticReport } from "@/domain/diagnostic";
+import { InsufficientEvidenceResultView } from "@/features/intelligence/insufficient-evidence-result";
 
 const OUTCOME_LABEL: Record<DiagnosticOutcome, string> = {
   success: "Success",
@@ -37,38 +36,21 @@ export function DiagnoseResult({
         <Badge variant="outline">{OUTCOME_LABEL[report.outcome]}</Badge>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-lg border border-border bg-card p-4">
-          <h3 className="text-sm font-medium">Likely cause</h3>
-          {report.likelyCause ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              {report.likelyCause}
-            </p>
-          ) : (
-            <div className="mt-3">
-              <InsufficientEvidenceState description="No measured observations exist, so NetPulse will not name a cause." />
-            </div>
-          )}
-        </article>
-        <article className="rounded-lg border border-border bg-card p-4">
-          <h3 className="text-sm font-medium">Confidence</h3>
-          {report.confidence.level ? (
-            <div className="mt-3">
-              <ConfidenceBadge confidence={report.confidence.level} />
-              {report.confidence.percent !== null ? (
-                <p className="mt-2 font-mono text-sm tabular-nums">
-                  {report.confidence.percent}%
-                </p>
-              ) : null}
-            </div>
-          ) : (
-            <p className="mt-2 text-sm text-muted-foreground" role="status">
-              Confidence is not available. A percentage is shown only when the
-              engine supplies one.
-            </p>
-          )}
-        </article>
-      </div>
+      <InsufficientEvidenceResultView result={report.insufficientEvidence} />
+
+      <article className="rounded-lg border border-border bg-card p-4">
+        <h3 className="text-sm font-medium">Likely cause</h3>
+        {report.likelyCause ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {report.likelyCause}
+          </p>
+        ) : (
+          <p className="mt-2 text-sm text-muted-foreground" role="status">
+            No cause is named. That is insufficient evidence, not a fabricated
+            root cause.
+          </p>
+        )}
+      </article>
 
       <div>
         <h3 className="text-sm font-medium">Evidence</h3>
@@ -95,7 +77,7 @@ export function DiagnoseResult({
 
       <div>
         <h3 className="text-sm font-medium">Alternative hypotheses</h3>
-        {report.hypotheses.length === 0 ? (
+        {report.alternativeHypotheses.length === 0 ? (
           <EmptyState
             className="mt-3"
             title="No hypotheses"
@@ -103,7 +85,7 @@ export function DiagnoseResult({
           />
         ) : (
           <ul className="mt-3 grid gap-3">
-            {report.hypotheses.map((item) => (
+            {report.alternativeHypotheses.map((item) => (
               <li key={item.id}>
                 <EvidenceItem
                   evidenceClass="inferred_hypothesis"
@@ -116,19 +98,30 @@ export function DiagnoseResult({
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <article className="rounded-lg border border-border bg-card p-4">
-          <h3 className="text-sm font-medium">Recommended action</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {report.recommendation ?? "No recommendation without evidence."}
-          </p>
-        </article>
-        <article className="rounded-lg border border-border bg-card p-4">
-          <h3 className="text-sm font-medium">Verification</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {report.verification.note}
-          </p>
-        </article>
+      <div>
+        <h3 className="text-sm font-medium">Verification steps</h3>
+        {report.verificationSteps.length === 0 ? (
+          <EmptyState
+            className="mt-3"
+            title="No verification steps"
+            description="Verification compares a later measured run to this one."
+          />
+        ) : (
+          <ul className="mt-3 grid gap-3">
+            {report.verificationSteps.map((step) => (
+              <li
+                key={step.id}
+                className="rounded-lg border border-border bg-card p-4 text-sm"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium">{step.label}</p>
+                  <Badge variant="outline">{step.status.replace(/_/g, " ")}</Badge>
+                </div>
+                <p className="mt-2 text-muted-foreground">{step.note}</p>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {report.outcome === "measurement_unavailable" ||

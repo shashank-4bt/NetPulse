@@ -17,6 +17,18 @@ describe("report store", () => {
     expect(getReport(report.reportId)?.reportId).toBe(report.reportId);
   });
 
+  it("reads a report saved through the shared process store", () => {
+    const report = createUnavailableReport({
+      ok: true,
+      raw: "google.com",
+      hostname: "google.com",
+      kind: "known_service",
+      serviceSlug: "google",
+    });
+    const saved = saveReport(report);
+    expect(getReport(saved.reportId)?.target.hostname).toBe("google.com");
+  });
+
   it("rejects malformed ids instead of treating them as a failed diagnosis", () => {
     expect(parseReportId("../etc/passwd")).toBeNull();
     expect(parseReportId("not-a-uuid")).toBeNull();

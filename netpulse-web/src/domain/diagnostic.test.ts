@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   DIAGNOSTIC_OUTCOMES,
   DIAGNOSTIC_STEP_IDS,
+  EVIDENCE_GRAPH_NODE_IDS,
   MEASUREMENT_BLOCKS,
 } from "@/domain/diagnostic";
 
@@ -38,7 +39,19 @@ describe("diagnostic domain", () => {
     ]);
   });
 
-  it("lists technical detail blocks without charts as a requirement", () => {
+  it("keeps the Stage 05 evidence graph order", () => {
+    expect(EVIDENCE_GRAPH_NODE_IDS).toEqual([
+      "device",
+      "wifi",
+      "router",
+      "isp",
+      "route",
+      "cdn",
+      "service",
+    ]);
+  });
+
+  it("lists technical detail blocks including route metadata and network/ASN", () => {
     expect(MEASUREMENT_BLOCKS.map((block) => block.key)).toEqual([
       "dns",
       "tcp",
@@ -50,6 +63,18 @@ describe("diagnostic domain", () => {
       "network",
       "region",
       "timestamp",
+    ]);
+    expect(MEASUREMENT_BLOCKS.map((block) => block.label)).toEqual([
+      "DNS",
+      "TCP",
+      "TLS",
+      "HTTP",
+      "Latency",
+      "Packet loss",
+      "Route metadata",
+      "Network/ASN",
+      "Region",
+      "Timestamp",
     ]);
   });
 });

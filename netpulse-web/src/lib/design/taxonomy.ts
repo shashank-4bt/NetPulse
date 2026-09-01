@@ -1,6 +1,7 @@
 import type {
   ConfidenceLevel,
   EvidenceClass,
+  LayerStatus,
   OperationalStatus,
   Severity,
 } from "@/domain/display";
@@ -34,3 +35,11 @@ export const EVIDENCE_CLASS_LABEL: Record<EvidenceClass, string> = {
 };
 
 export const INSUFFICIENT_EVIDENCE_LABEL = "Insufficient evidence";
+
+export const LAYER_STATUS_LABEL: Record<LayerStatus, string> = {
+  not_measured: "Not measured",
+  insufficient_evidence: "Insufficient evidence",
+  healthy: "Healthy",
+  degraded: "Degraded",
+  failed: "Failed",
+};

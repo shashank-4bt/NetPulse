@@ -1,6 +1,7 @@
 import { DiagnoseResult } from "@/features/diagnose/diagnose-result";
 import { DiagnoseStepper } from "@/features/diagnose/diagnose-stepper";
 import { TechnicalDetails } from "@/features/diagnose/technical-details";
+import { IntelligenceView } from "@/features/intelligence/intelligence-view";
 import type { DiagnosticReport } from "@/domain/diagnostic";
 
 type DiagnoseRunViewProps = {
@@ -32,8 +33,20 @@ export function DiagnoseRunView({
             <dd className="font-mono">{report.timestamp}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Engine</dt>
-            <dd className="font-mono">{report.engineVersion}</dd>
+            <dt className="text-muted-foreground">diagnosticEngineVersion</dt>
+            <dd className="font-mono">{report.versions.diagnosticEngineVersion}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">ruleVersion</dt>
+            <dd className="font-mono">{report.versions.ruleVersion}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">measurementVersion</dt>
+            <dd className="font-mono">{report.versions.measurementVersion}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">modelVersion</dt>
+            <dd className="font-mono">{report.versions.modelVersion}</dd>
           </div>
           <div className="sm:col-span-2">
             <dt className="text-muted-foreground">Report ID</dt>
@@ -43,6 +56,7 @@ export function DiagnoseRunView({
       </section>
       <DiagnoseStepper steps={report.tests} />
       <DiagnoseResult report={report} showReportLink={showReportLink} />
+      <IntelligenceView report={report} />
       <TechnicalDetails report={report} />
     </div>
   );

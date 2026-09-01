@@ -5,8 +5,18 @@ import { parseReportId } from "@/lib/reports/id";
  * Process-local report store.
  * PRODUCTION ENGINEERING REQUIREMENT until PostgreSQL exists.
  * Reports do not survive process restart and are not shared across instances.
+ *
+ * The Map is hung on globalThis so App Router, server actions, and route
+ * handlers share one store instead of one Map per bundled module instance.
  */
-const reports = new Map<string, DiagnosticReport>();
+const globalForReports = globalThis as typeof globalThis & {
+  __netpulseReports?: Map<string, DiagnosticReport>;
+};
+
+const reports =
+  globalForReports.__netpulseReports ?? new Map<string, DiagnosticReport>();
+
+globalForReports.__netpulseReports = reports;
 
 export function saveReport(report: DiagnosticReport): DiagnosticReport {
   const id = parseReportId(report.reportId);
