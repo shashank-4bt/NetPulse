@@ -3,10 +3,12 @@ package diagnostics
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/contract"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/id"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/incidents"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/validation"
 )
@@ -69,26 +71,60 @@ func (s *Service) ListServices(ctx context.Context) ([]contract.Service, *contra
 	return items, nil, 200
 }
 
-func (s *Service) GetService(ctx context.Context, slug string) (*contract.Service, *contract.APIError, int) {
+func (s *Service) GetService(ctx context.Context, slug string) (*contract.Service, *contract.ServiceIntelligence, *contract.APIError, int) {
 	item, err := s.Store.GetService(ctx, slug)
 	if err != nil {
-		return nil, &contract.APIError{Code: "unavailable", Message: "service catalog is unavailable"}, 503
+		return nil, nil, &contract.APIError{Code: "unavailable", Message: "service catalog is unavailable"}, 503
 	}
 	if item == nil {
-		return nil, &contract.APIError{Code: "not_found", Message: "service not found"}, 404
+		return nil, nil, &contract.APIError{Code: "not_found", Message: "service not found"}, 404
 	}
-	return item, nil, 200
+	intel := contract.EmptyIntelligence()
+	listed, listErr := s.Store.ListIncidents(ctx)
+	if listErr == nil {
+		ids := make([]string, 0)
+		for _, incident := range listed {
+			incident = contract.NormalizeIncident(incident)
+			if containsFold(incident.AffectedServices, slug) || strings.EqualFold(incident.Scope, slug) {
+				ids = append(ids, incident.ID)
+			}
+		}
+		intel.RecentIncidentIDs = ids
+	}
+	return item, &intel, nil, 200
 }
 
-func (s *Service) ListIncidents(ctx context.Context) ([]contract.Incident, *contract.APIError, int) {
+func (s *Service) ListIncidents(ctx context.Context, query incidents.Query) ([]contract.Incident, *contract.Page, *contract.APIError, int) {
 	items, err := s.Store.ListIncidents(ctx)
 	if err != nil {
-		return nil, &contract.APIError{Code: "unavailable", Message: "incident store is unavailable"}, 503
+		return nil, nil, &contract.APIError{Code: "unavailable", Message: "incident store is unavailable"}, 503
 	}
 	if items == nil {
 		items = []contract.Incident{}
 	}
-	return items, nil, 200
+	result := incidents.Filter(items, query)
+	return result.Items, &result.Page, nil, 200
+}
+
+func (s *Service) GetIncident(ctx context.Context, incidentID string) (*contract.Incident, *contract.APIError, int) {
+	item, err := s.Store.GetIncident(ctx, incidentID)
+	if err != nil {
+		return nil, &contract.APIError{Code: "unavailable", Message: "incident store is unavailable"}, 503
+	}
+	if item == nil {
+		return nil, &contract.APIError{Code: "not_found", Message: "incident not found"}, 404
+	}
+	normalized := contract.NormalizeIncident(*item)
+	return &normalized, nil, 200
+}
+
+func containsFold(values []string, want string) bool {
+	for _, value := range values {
+		if strings.EqualFold(value, want) {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Service) now() time.Time {

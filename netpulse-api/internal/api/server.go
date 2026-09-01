@@ -11,6 +11,7 @@ import (
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/contract"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/diagnostics"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/incidents"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage"
 )
 
@@ -30,6 +31,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/services", s.listServices)
 	mux.HandleFunc("GET /v1/services/{slug}", s.getService)
 	mux.HandleFunc("GET /v1/incidents", s.listIncidents)
+	mux.HandleFunc("GET /v1/incidents/{id}", s.getIncident)
 	return s.middleware(mux)
 }
 
@@ -104,21 +106,42 @@ func (s *Server) listServices(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getService(w http.ResponseWriter, r *http.Request) {
-	item, apiErr, status := s.Diagnostics.GetService(r.Context(), r.PathValue("slug"))
+	item, intel, apiErr, status := s.Diagnostics.GetService(r.Context(), r.PathValue("slug"))
 	if apiErr != nil {
 		write(w, status, contract.Envelope{Error: apiErr})
 		return
 	}
-	write(w, status, contract.Envelope{OK: true, Service: item})
+	write(w, status, contract.Envelope{OK: true, Service: item, Intelligence: intel})
 }
 
 func (s *Server) listIncidents(w http.ResponseWriter, r *http.Request) {
-	items, apiErr, status := s.Diagnostics.ListIncidents(r.Context())
+	query := incidents.ParseQuery(map[string]string{
+		"service":  r.URL.Query().Get("service"),
+		"region":   r.URL.Query().Get("region"),
+		"network":  r.URL.Query().Get("network"),
+		"severity": r.URL.Query().Get("severity"),
+		"status":   r.URL.Query().Get("status"),
+		"q":        r.URL.Query().Get("q"),
+		"sort":     r.URL.Query().Get("sort"),
+		"time":     r.URL.Query().Get("time"),
+		"page":     r.URL.Query().Get("page"),
+		"pageSize": r.URL.Query().Get("pageSize"),
+	}, time.Now().UTC())
+	items, page, apiErr, status := s.Diagnostics.ListIncidents(r.Context(), query)
 	if apiErr != nil {
 		write(w, status, contract.Envelope{Error: apiErr})
 		return
 	}
-	write(w, status, contract.Envelope{OK: true, Incidents: items})
+	write(w, status, contract.Envelope{OK: true, Incidents: items, Page: page})
+}
+
+func (s *Server) getIncident(w http.ResponseWriter, r *http.Request) {
+	item, apiErr, status := s.Diagnostics.GetIncident(r.Context(), r.PathValue("id"))
+	if apiErr != nil {
+		write(w, status, contract.Envelope{Error: apiErr})
+		return
+	}
+	write(w, status, contract.Envelope{OK: true, Incident: item})
 }
 
 func write(w http.ResponseWriter, status int, body contract.Envelope) {

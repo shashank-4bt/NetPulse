@@ -164,6 +164,14 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Frontend uses `NETPULSE_API_BASE_URL`. If unset or the API fails, UI stays unavailable/empty. No production fake fallback data.
 - Shared contract: `contracts/openapi.yaml` plus matching Go/TS types.
 
+## 12. Stage 07 notes
+
+- `/services`, `/service/[slug]`, `/status`, `/outages`, and `/incident/[id]` are live surfaces for catalog + stored incident intelligence.
+- Service pages expose current state, health, last updated, availability, latency, errors, regional/network health, recent incidents, and chart slots. Values stay not-measured / empty until series exist.
+- Outage center supports service, region, network, severity, status, time, search, sort, and pagination against the stored incident list. Empty and error states do not invent rows.
+- Incident documents include evidence, hypotheses, confidence, and a Detected→Resolved timeline. A single recovered measurement cannot mark resolved.
+- Attribution prefers “Elevated connectivity failures observed” unless isolation evidence exists. Affected-user counts stay null.
+
 ## 7. Stage 02 decisions
 
 - Web app lives in `netpulse-web/` because npm package names cannot contain capitals (`NetPulse`). Root scripts proxy into that package. This is a **PRODUCTION ENGINEERING REQUIREMENT**, not a product feature.

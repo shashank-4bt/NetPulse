@@ -68,6 +68,24 @@ func (s *Store) ListIncidents(_ context.Context) ([]contract.Incident, error) {
 	return out, nil
 }
 
+func (s *Store) GetIncident(_ context.Context, id string) (*contract.Incident, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, item := range s.incidents {
+		if item.ID == id {
+			copy := contract.NormalizeIncident(item)
+			return &copy, nil
+		}
+	}
+	return nil, nil
+}
+
+func (s *Store) ReplaceIncidents(items []contract.Incident) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.incidents = append([]contract.Incident{}, items...)
+}
+
 func (s *Store) ListServices(_ context.Context) ([]contract.Service, error) {
 	return storage.ServiceCatalog(), nil
 }

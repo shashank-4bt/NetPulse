@@ -12,16 +12,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SERVICE_CATALOG } from "@/lib/content/services";
+import { loadServiceCatalog } from "@/lib/observatory/load";
 
-export const metadata: Metadata = {
-  title: "Services",
-  description:
-    "Catalog of services NetPulse can diagnose. This is not a live status board.",
-  alternates: { canonical: "/services" },
-};
+export const dynamic = "force-dynamic";
 
-export default function ServicesPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const catalog = await loadServiceCatalog();
+  return {
+    title: "Services",
+    description: `Catalog of ${catalog.services.length} services NetPulse can diagnose. This is not a live status board.`,
+    alternates: { canonical: "/services" },
+  };
+}
+
+export default async function ServicesPage() {
+  const catalog = await loadServiceCatalog();
+
   return (
     <main id="main-content" className="flex-1">
       <PageHero
@@ -30,9 +36,9 @@ export default function ServicesPage() {
         description="These entries describe targets and layers. They do not report current availability."
       />
       <PageContainer className="space-y-6 py-10">
-        <DevelopmentBanner description="Service pages are editorial. Live health requires measurement workers." />
+        <DevelopmentBanner description={catalog.reason} />
         <ul className="grid gap-3 sm:grid-cols-2">
-          {SERVICE_CATALOG.map((service) => (
+          {catalog.services.map((service) => (
             <li key={service.slug}>
               <Card className="h-full">
                 <CardHeader>

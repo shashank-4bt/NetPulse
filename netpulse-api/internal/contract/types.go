@@ -1,10 +1,11 @@
 package contract
 
 const (
-	ModelVersion       = "0.6.0"
-	EngineVersion      = "0.6.0"
-	RuleVersion        = "0.6.0-worker-vantage"
+	ModelVersion       = "0.7.0"
+	EngineVersion      = "0.7.0"
+	RuleVersion        = "0.7.0-service-incident"
 	MeasurementVersion = "0.6.0-dns-tcp-tls-http"
+	ObservedFailures   = "Elevated connectivity failures observed"
 	ConfidenceCaveat   = "Confidence is not certainty. A level or percentage can be wrong and must not be treated as proof."
 	InsufficientCause  = "NetPulse could not safely determine the root cause."
 	InsufficientNext   = "Next recommended check: compare a user-path measurement with this worker vantage. Worker probes cannot isolate device, Wi-Fi, or ISP faults on their own."
@@ -150,13 +151,16 @@ type APIError struct {
 }
 
 type Envelope struct {
-	OK        bool       `json:"ok"`
-	Diagnosis *Diagnosis `json:"diagnosis,omitempty"`
-	Services  []Service  `json:"services,omitempty"`
-	Service   *Service   `json:"service,omitempty"`
-	Incidents []Incident `json:"incidents"`
-	Health    *Health    `json:"health,omitempty"`
-	Error     *APIError  `json:"error,omitempty"`
+	OK           bool                 `json:"ok"`
+	Diagnosis    *Diagnosis           `json:"diagnosis,omitempty"`
+	Services     []Service            `json:"services,omitempty"`
+	Service      *Service             `json:"service,omitempty"`
+	Intelligence *ServiceIntelligence `json:"intelligence,omitempty"`
+	Incidents    []Incident           `json:"incidents"`
+	Incident     *Incident            `json:"incident,omitempty"`
+	Page         *Page                `json:"page,omitempty"`
+	Health       *Health              `json:"health,omitempty"`
+	Error        *APIError            `json:"error,omitempty"`
 }
 
 type Service struct {
@@ -167,11 +171,67 @@ type Service struct {
 	Layers   []string `json:"layers"`
 }
 
+type Observation struct {
+	Value        any     `json:"value"`
+	Unit         *string `json:"unit"`
+	Measured     bool    `json:"measured"`
+	SampleCount  int     `json:"sampleCount"`
+	SampleWindow *string `json:"sampleWindow"`
+	Summary      string  `json:"summary"`
+}
+
+type SliceObservation struct {
+	ID          string `json:"id"`
+	Label       string `json:"label"`
+	Status      string `json:"status"`
+	SampleCount int    `json:"sampleCount"`
+	Summary     string `json:"summary"`
+}
+
+type ServiceIntelligence struct {
+	CurrentState      string             `json:"currentState"`
+	Health            *int               `json:"health"`
+	LastUpdated       *string            `json:"lastUpdated"`
+	Availability      Observation        `json:"availability"`
+	Latency           Observation        `json:"latency"`
+	Errors            Observation        `json:"errors"`
+	RegionalHealth    []SliceObservation `json:"regionalHealth"`
+	NetworkHealth     []SliceObservation `json:"networkHealth"`
+	RecentIncidentIDs []string           `json:"recentIncidentIds"`
+}
+
+type IncidentTimelineEvent struct {
+	Stage  string  `json:"stage"`
+	Label  string  `json:"label"`
+	Status string  `json:"status"`
+	At     *string `json:"at"`
+	Note   string  `json:"note"`
+}
+
 type Incident struct {
-	ID        string `json:"id"`
-	Title     string `json:"title"`
-	Scope     string `json:"scope"`
-	StartedAt string `json:"startedAt"`
+	ID                string                  `json:"id"`
+	Title             string                  `json:"title"`
+	Severity          string                  `json:"severity"`
+	Status            string                  `json:"status"`
+	Scope             string                  `json:"scope"`
+	StartedAt         string                  `json:"startedAt"`
+	LastUpdatedAt     string                  `json:"lastUpdatedAt"`
+	AffectedServices  []string                `json:"affectedServices"`
+	Regions           []string                `json:"regions"`
+	Networks          []string                `json:"networks"`
+	Evidence          []Evidence              `json:"evidence"`
+	Hypotheses        []Hypothesis            `json:"hypotheses"`
+	Confidence        Confidence              `json:"confidence"`
+	Timeline          []IncidentTimelineEvent `json:"timeline"`
+	SampleCount       int                     `json:"sampleCount"`
+	SampleRate        *string                 `json:"sampleRate"`
+	AffectedUserCount *int                    `json:"affectedUserCount"`
+}
+
+type Page struct {
+	Number int `json:"number"`
+	Size   int `json:"size"`
+	Total  int `json:"total"`
 }
 
 type Health struct {
@@ -186,6 +246,55 @@ func EmptyConfidence() Confidence {
 		AlternativeHypothesisIDs: []string{},
 		Caveat:                   ConfidenceCaveat,
 	}
+}
+
+func UnmeasuredObservation(topic string) Observation {
+	return Observation{
+		Value:       nil,
+		Measured:    false,
+		SampleCount: 0,
+		Summary:     "Observed sample count: 0. " + topic + " is not estimated for a population.",
+	}
+}
+
+func EmptyIntelligence() ServiceIntelligence {
+	return ServiceIntelligence{
+		CurrentState:      "not_measured",
+		Health:            nil,
+		LastUpdated:       nil,
+		Availability:      UnmeasuredObservation("Availability"),
+		Latency:           UnmeasuredObservation("Latency"),
+		Errors:            UnmeasuredObservation("Error rate"),
+		RegionalHealth:    []SliceObservation{},
+		NetworkHealth:     []SliceObservation{},
+		RecentIncidentIDs: []string{},
+	}
+}
+
+func NormalizeIncident(item Incident) Incident {
+	if item.AffectedServices == nil {
+		item.AffectedServices = []string{}
+	}
+	if item.Regions == nil {
+		item.Regions = []string{}
+	}
+	if item.Networks == nil {
+		item.Networks = []string{}
+	}
+	if item.Evidence == nil {
+		item.Evidence = []Evidence{}
+	}
+	if item.Hypotheses == nil {
+		item.Hypotheses = []Hypothesis{}
+	}
+	if item.Timeline == nil {
+		item.Timeline = []IncidentTimelineEvent{}
+	}
+	item.AffectedUserCount = nil
+	if item.Confidence.Caveat == "" {
+		item.Confidence = EmptyConfidence()
+	}
+	return item
 }
 
 func CurrentVersions() Versions {

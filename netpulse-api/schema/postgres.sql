@@ -39,9 +39,21 @@ CREATE TABLE IF NOT EXISTS reports (
 CREATE TABLE IF NOT EXISTS incidents (
   id UUID PRIMARY KEY,
   title TEXT NOT NULL,
+  severity TEXT,
+  status TEXT,
   scope TEXT NOT NULL,
   started_at TIMESTAMPTZ NOT NULL,
-  evidence JSONB
+  last_updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  affected_services TEXT[],
+  regions TEXT[],
+  networks TEXT[],
+  evidence JSONB,
+  hypotheses JSONB,
+  confidence JSONB,
+  timeline JSONB,
+  sample_count INTEGER NOT NULL DEFAULT 0,
+  sample_rate TEXT,
+  affected_user_count INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS subscriptions (

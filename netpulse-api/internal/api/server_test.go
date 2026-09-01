@@ -181,6 +181,80 @@ func TestUnknownDiagnosisIsNotAFailedMeasurement(t *testing.T) {
 	}
 }
 
+func TestUnknownIncidentIsNotInvented(t *testing.T) {
+	ts, _, _ := setup(t)
+	res, err := http.Get(ts.URL + "/v1/incidents/00000000-0000-4000-8000-000000000000")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 404 {
+		t.Fatalf("got %d", res.StatusCode)
+	}
+}
+
+func TestServiceIntelligenceIsUnmeasuredWithoutSeries(t *testing.T) {
+	ts, _, _ := setup(t)
+	res, err := http.Get(ts.URL + "/v1/services/youtube")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	var env contract.Envelope
+	if err := json.NewDecoder(res.Body).Decode(&env); err != nil {
+		t.Fatal(err)
+	}
+	if env.Intelligence == nil || env.Intelligence.CurrentState != "not_measured" {
+		t.Fatal("catalog health must stay not_measured without samples")
+	}
+	if env.Intelligence.Health != nil || env.Intelligence.Availability.Measured {
+		t.Fatal("must not invent availability or a health score")
+	}
+	if env.Intelligence.Availability.SampleCount != 0 {
+		t.Fatal("sample count must be observed zero, not a population rate")
+	}
+}
+
+func TestIncidentFiltersDoNotInventMatches(t *testing.T) {
+	ts, store, _ := setup(t)
+	store.ReplaceIncidents([]contract.Incident{{
+		ID:               "11111111-1111-4111-8111-111111111111",
+		Title:            "Elevated connectivity failures observed",
+		Severity:         "high",
+		Status:           "investigating",
+		Scope:            "youtube",
+		StartedAt:        "2026-09-01T04:00:00Z",
+		LastUpdatedAt:    "2026-09-01T05:00:00Z",
+		AffectedServices: []string{"youtube"},
+		Regions:          []string{"eu-west"},
+		Networks:         []string{"AS64500"},
+	}})
+	res, err := http.Get(ts.URL + "/v1/incidents?service=github")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	var env contract.Envelope
+	if err := json.NewDecoder(res.Body).Decode(&env); err != nil {
+		t.Fatal(err)
+	}
+	if len(env.Incidents) != 0 || env.Page == nil || env.Page.Total != 0 {
+		t.Fatal("unmatched filters must return an empty list")
+	}
+	res, err = http.Get(ts.URL + "/v1/incidents/11111111-1111-4111-8111-111111111111")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	var got contract.Envelope
+	if err := json.NewDecoder(res.Body).Decode(&got); err != nil {
+		t.Fatal(err)
+	}
+	if got.Incident == nil || got.Incident.AffectedUserCount != nil {
+		t.Fatal("stored incidents must not invent affected-user counts")
+	}
+}
+
 func TestRateLimit(t *testing.T) {
 	store := memory.New()
 	if !store.Allow("test", 1) {

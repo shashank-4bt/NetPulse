@@ -35,6 +35,9 @@ func (s *Store) UpdateDiagnosis(context.Context, storage.DiagnosisRecord) error 
 func (s *Store) ListIncidents(context.Context) ([]contract.Incident, error) {
 	return nil, ErrNotConfigured
 }
+func (s *Store) GetIncident(context.Context, string) (*contract.Incident, error) {
+	return nil, ErrNotConfigured
+}
 func (s *Store) ListServices(context.Context) ([]contract.Service, error) {
 	return nil, ErrNotConfigured
 }

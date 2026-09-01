@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { HealthScore } from "@/components/status/health-score";
+import { ErrorState } from "@/components/feedback/error-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { DevelopmentBanner } from "@/components/public/development-banner";
 import { PageHero } from "@/components/public/page-hero";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { getKnownTargets } from "@/lib/content/known-targets";
-import {
-  getServiceBySlug,
-  getServiceSlugs,
-} from "@/lib/content/services";
+import { ServiceIntelligenceView } from "@/features/observatory/service-intelligence-view";
+import { getServiceBySlug, getServiceSlugs } from "@/lib/content/services";
+import { loadServicePage } from "@/lib/observatory/load";
+
+export const dynamic = "force-dynamic";
 
 type ServicePageProps = {
   params: Promise<{ slug: string }>;
@@ -26,70 +23,56 @@ export async function generateMetadata({
   params,
 }: ServicePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const service = getServiceBySlug(slug);
+  const loaded = await loadServicePage(slug);
+  const service = loaded?.catalog ?? getServiceBySlug(slug);
   if (!service) {
-    return { title: "Service not found" };
+    return { title: "Service not found", robots: { index: false, follow: false } };
   }
+  const measured = loaded?.intelligence.availability.measured;
   return {
     title: service.name,
-    description: `${service.name} diagnosis path. Live health is not available.`,
+    description: measured
+      ? `${service.name} service intelligence from stored NetPulse measurements. Worker vantage is not a user-path diagnosis.`
+      : `${service.name} diagnosis path. Live health, availability, and latency are not measured.`,
     alternates: { canonical: `/service/${service.slug}` },
   };
 }
 
 export default async function ServiceDetailPage({ params }: ServicePageProps) {
   const { slug } = await params;
-  const service = getServiceBySlug(slug);
-  if (!service) {
+  const loaded = await loadServicePage(slug);
+  if (!loaded) {
     notFound();
   }
 
-  const hostname =
-    getKnownTargets().find((target) => target.slug === service.slug)?.hostname ??
-    service.slug;
+  const chartState =
+    loaded.state === "unavailable"
+      ? "unavailable"
+      : loaded.intelligence.availability.sampleCount === 0
+        ? "empty"
+        : "insufficient_evidence";
 
   return (
     <main id="main-content" className="flex-1">
       <PageHero
-        eyebrow={service.category}
-        title={service.name}
-        description={`${service.summary} This page does not report live status.`}
+        eyebrow={loaded.catalog.category}
+        title={loaded.catalog.name}
+        description={`${loaded.catalog.summary} Current state, health, and charts stay empty until measured series exist.`}
       />
       <PageContainer className="space-y-6 py-10">
-        <DevelopmentBanner
-          title="Not measured"
-          description={`${service.name} has no connected probe series. NetPulse will not display an invented uptime or incident.`}
+        <DevelopmentBanner title="Service intelligence" description={loaded.reason} />
+        {loaded.state === "error" ? (
+          <ErrorState
+            title="Service intelligence unavailable"
+            description={loaded.reason}
+          />
+        ) : null}
+        <ServiceIntelligenceView
+          catalog={loaded.catalog}
+          intelligence={loaded.intelligence}
+          incidents={loaded.incidents}
+          chartState={chartState}
         />
-        <HealthScore value={null} confidence={null} label="Service health" />
-        <section aria-labelledby="layers-heading">
-          <h2 id="layers-heading" className="text-lg font-semibold">
-            Layers this catalog entry covers
-          </h2>
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {service.layers.map((layer) => (
-              <li key={layer}>
-                <Badge variant="outline">{layer}</Badge>
-              </li>
-            ))}
-          </ul>
-        </section>
-        <div className="flex flex-wrap gap-3">
-          <Button
-            nativeButton={false}
-            render={
-              <Link href={`/diagnose?target=${encodeURIComponent(hostname)}`} />
-            }
-          >
-            Check My Internet
-          </Button>
-          <Button
-            variant="outline"
-            nativeButton={false}
-            render={<Link href="/services" />}
-          >
-            All services
-          </Button>
-        </div>
       </PageContainer>
     </main>
   );

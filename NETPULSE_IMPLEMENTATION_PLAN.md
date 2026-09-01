@@ -1,8 +1,8 @@
 # NETPULSE Implementation Plan
 
-**Current stage:** 06 — Backend integration  
+**Current stage:** 07 — Service and incident intelligence  
 **Date:** 2026-09-01  
-**Status:** Stages 01–06 implemented. `netpulse-web` talks to `netpulse-api` when `NETPULSE_API_BASE_URL` is set. Default stores are memory adapters; Postgres/ClickHouse/Redis drivers are unlinked until a DSN is supplied.
+**Status:** Stages 01–07 implemented. Service, status, outage, and incident pages render stored records only. Unmeasured health, empty incident feeds, and charts stay empty or unavailable.
 
 This plan is derived from:
 

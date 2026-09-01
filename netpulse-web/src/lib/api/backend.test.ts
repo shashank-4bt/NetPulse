@@ -113,6 +113,7 @@ describe("backend client", () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.incidents).toEqual([]);
+      expect(result.total).toBe(0);
     }
   });
 });

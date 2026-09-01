@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { EmptyState } from "@/components/feedback/empty-state";
+import { ErrorState } from "@/components/feedback/error-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { DevelopmentBanner } from "@/components/public/development-banner";
 import { PageHero } from "@/components/public/page-hero";
-import { Badge } from "@/components/ui/badge";
+import { LayerStatusBadge } from "@/components/status/layer-status-badge";
 import {
   Table,
   TableBody,
@@ -14,40 +15,51 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getPublicHealthSnapshot } from "@/lib/api/public-health";
-import { SERVICE_CATALOG } from "@/lib/content/services";
+import { emptyServiceIntelligence } from "@/features/observatory/empty-intelligence";
+import { loadServiceCatalog } from "@/lib/observatory/load";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Status",
-  description:
-    "Public service status. Live health is unavailable until measurement workers are connected.",
-  alternates: { canonical: "/status" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const catalog = await loadServiceCatalog();
+  return {
+    title: "Status",
+    description:
+      catalog.state === "unavailable"
+        ? "Public service status. Live health is unavailable until measurement workers are connected."
+        : "Public service status from stored measurements only. Unmeasured rows stay not measured.",
+    alternates: { canonical: "/status" },
+  };
+}
 
 export default async function StatusPage() {
-  const health = await getPublicHealthSnapshot();
+  const catalog = await loadServiceCatalog();
+  const intelligence = emptyServiceIntelligence();
 
   return (
     <main id="main-content" className="flex-1">
       <PageHero
         eyebrow="Public status"
         title="Service health"
-        description="This board lists catalog targets only. It is not a live status page."
+        description="This board lists catalog targets. It is not a live status page and does not invent operational green."
       />
       <PageContainer className="space-y-6 py-10">
-        <DevelopmentBanner description={health.reason} />
+        <DevelopmentBanner description={catalog.reason} />
+        {catalog.state === "error" ? (
+          <ErrorState title="Status source failed" description={catalog.reason} />
+        ) : null}
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Service</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Result</TableHead>
+              <TableHead>Current state</TableHead>
+              <TableHead>Health</TableHead>
+              <TableHead>Last updated</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {SERVICE_CATALOG.map((service) => (
+            {catalog.services.map((service) => (
               <TableRow key={service.slug}>
                 <TableCell>
                   <Link
@@ -59,18 +71,22 @@ export default async function StatusPage() {
                 </TableCell>
                 <TableCell>{service.category}</TableCell>
                 <TableCell>
-                  <Badge variant="outline">Not measured</Badge>
+                  <LayerStatusBadge status={intelligence.currentState === "not_measured" ? "not_measured" : "insufficient_evidence"} />
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  Not scored
+                </TableCell>
+                <TableCell className="font-mono text-muted-foreground">
+                  —
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-        {health.incidents.length === 0 ? (
-          <EmptyState
-            title="No live results"
-            description="When probes exist, this table will show measured layer outcomes instead of 'Not measured'."
-          />
-        ) : null}
+        <EmptyState
+          title="No live results"
+          description="When probe series exist, this table will show measured layer outcomes instead of 'Not measured'."
+        />
       </PageContainer>
     </main>
   );

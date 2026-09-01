@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: NetPulse API
-  version: 0.6.0
+  version: 0.7.0
   description: Versioned JSON contract for diagnoses, services, and incidents. No invented health.
 servers:
   - url: http://localhost:8080
@@ -67,9 +67,54 @@ paths:
           description: Not found
   /v1/incidents:
     get:
+      summary: Stored incidents only
+      parameters:
+        - in: query
+          name: service
+          schema: { type: string }
+        - in: query
+          name: region
+          schema: { type: string }
+        - in: query
+          name: network
+          schema: { type: string }
+        - in: query
+          name: severity
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: time
+          schema: { type: string, enum: [all, 24h, 7d, 30d] }
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: sort
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: pageSize
+          schema: { type: integer }
       responses:
         "200":
           description: Stored incidents only. Empty means none recorded.
+  /v1/incidents/{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Stored incident
+        "404":
+          description: Not found
 components:
   schemas:
     Error:

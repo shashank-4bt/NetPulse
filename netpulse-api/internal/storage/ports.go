@@ -23,6 +23,7 @@ type DiagnoseStore interface {
 	GetDiagnosis(ctx context.Context, id string) (*DiagnosisRecord, error)
 	UpdateDiagnosis(ctx context.Context, rec DiagnosisRecord) error
 	ListIncidents(ctx context.Context) ([]contract.Incident, error)
+	GetIncident(ctx context.Context, id string) (*contract.Incident, error)
 	ListServices(ctx context.Context) ([]contract.Service, error)
 	GetService(ctx context.Context, slug string) (*contract.Service, error)
 	Backend() string
