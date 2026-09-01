@@ -1,27 +1,42 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
-import { UnavailableState } from "@/components/feedback/unavailable-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { validateDiagnoseTarget } from "@/features/diagnose/validate-target";
+import { startDiagnosis } from "@/features/diagnose/start-diagnosis";
 
-export function DiagnoseForm() {
-  const [value, setValue] = useState("");
+const EXAMPLES = ["youtube.com", "google.com", "instagram.com"] as const;
+
+type DiagnoseFormProps = {
+  initialValue?: string;
+};
+
+export function DiagnoseForm({ initialValue = "" }: DiagnoseFormProps) {
+  const router = useRouter();
+  const [value, setValue] = useState(initialValue);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const validation = validateDiagnoseTarget(value);
-    if (!validation.ok) {
-      setResult(null);
-      setError(validation.error);
-      return;
-    }
+    setPending(true);
     setError(null);
-    setResult(validation.hostname);
+    try {
+      const result = await startDiagnosis(value);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.push(`/diagnose?run=${result.reportId}`);
+    } catch {
+      setError(
+        "The diagnose service is unavailable. No measurement was started."
+      );
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -32,14 +47,14 @@ export function DiagnoseForm() {
       >
         <div className="min-w-0 flex-1">
           <label htmlFor="diagnose-target" className="text-sm font-medium">
-            Hostname or URL
+            Domain, URL, or known service
           </label>
           <Input
             id="diagnose-target"
             name="target"
             value={value}
             onChange={(event) => setValue(event.target.value)}
-            placeholder="example.com"
+            placeholder="youtube.com"
             autoComplete="off"
             spellCheck={false}
             aria-invalid={error ? true : undefined}
@@ -47,22 +62,31 @@ export function DiagnoseForm() {
             className="mt-1"
           />
         </div>
-        <Button type="submit">Check My Internet</Button>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Starting…" : "Check My Internet"}
+        </Button>
       </form>
+      <div className="flex flex-wrap gap-2">
+        {EXAMPLES.map((hostname) => (
+          <Button
+            key={hostname}
+            type="button"
+            variant="outline"
+            onClick={() => setValue(hostname)}
+          >
+            {hostname}
+          </Button>
+        ))}
+      </div>
       <p id="diagnose-help" className="text-sm text-muted-foreground">
-        No probe is sent from this form until measurement workers are connected.
-        Localhost and private addresses are rejected.
+        Accepts a public hostname, http(s) URL, or a catalog service. Localhost,
+        private networks, credentials, and non-http schemes are rejected. No
+        probe is sent until workers exist.
       </p>
       {error ? (
         <p id="diagnose-error" className="text-sm text-destructive" role="alert">
           {error}
         </p>
-      ) : null}
-      {result ? (
-        <UnavailableState
-          title="Measurement unavailable"
-          description={`Target accepted: ${result}. The diagnostic API is not connected, so NetPulse did not run DNS, TLS, or HTTP probes and did not invent a result.`}
-        />
       ) : null}
     </div>
   );

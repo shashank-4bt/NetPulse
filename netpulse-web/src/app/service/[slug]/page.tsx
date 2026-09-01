@@ -8,6 +8,7 @@ import { DevelopmentBanner } from "@/components/public/development-banner";
 import { PageHero } from "@/components/public/page-hero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getKnownTargets } from "@/lib/content/known-targets";
 import {
   getServiceBySlug,
   getServiceSlugs,
@@ -43,6 +44,10 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
     notFound();
   }
 
+  const hostname =
+    getKnownTargets().find((target) => target.slug === service.slug)?.hostname ??
+    service.slug;
+
   return (
     <main id="main-content" className="flex-1">
       <PageHero
@@ -69,7 +74,12 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
           </ul>
         </section>
         <div className="flex flex-wrap gap-3">
-          <Button nativeButton={false} render={<Link href="/#diagnose" />}>
+          <Button
+            nativeButton={false}
+            render={
+              <Link href={`/diagnose?target=${encodeURIComponent(hostname)}`} />
+            }
+          >
             Check My Internet
           </Button>
           <Button

@@ -10,8 +10,8 @@ export function DiagnoseSection() {
         <SectionHeading
           id="diagnose-heading"
           eyebrow="Quick diagnose"
-          title="Start with a hostname"
-          description="Enter a public hostname. When workers are online, NetPulse will isolate the path. Today the form only validates input and reports that measurement is unavailable."
+          title="Start a diagnosis"
+          description="The full workflow lives on /diagnose. Submitting here validates the target and opens that run. Probe steps stay unavailable until workers exist."
         />
         <div className="mt-6 rounded-lg border border-border bg-card p-4 md:p-6">
           <DiagnoseForm />

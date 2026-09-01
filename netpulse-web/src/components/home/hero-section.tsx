@@ -29,7 +29,7 @@ export function HeroSection() {
           guess, and it will not invent a status when evidence is missing.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Button nativeButton={false} render={<Link href="#diagnose" />}>
+          <Button nativeButton={false} render={<Link href="/diagnose" />}>
             Check My Internet
           </Button>
           <Button

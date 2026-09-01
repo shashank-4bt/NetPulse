@@ -48,7 +48,7 @@ export default function HowItWorksPage() {
             <EvidencePath />
           </div>
         </section>
-        <Button nativeButton={false} render={<Link href="/#diagnose" />}>
+        <Button nativeButton={false} render={<Link href="/diagnose" />}>
           Check My Internet
         </Button>
       </PageContainer>

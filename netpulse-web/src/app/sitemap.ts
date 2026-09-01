@@ -4,6 +4,7 @@ import { getServiceSlugs } from "@/lib/content/services";
 
 const STATIC_PATHS = [
   "/",
+  "/diagnose",
   "/about",
   "/how-it-works",
   "/services",

@@ -1,4 +1,5 @@
 export const PRIMARY_NAV = [
+  { href: "/diagnose", label: "Diagnose" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/services", label: "Services" },
   { href: "/status", label: "Status" },
@@ -20,6 +21,7 @@ export const FOOTER_COLUMNS = [
   {
     title: "Product",
     links: [
+      { href: "/diagnose", label: "Diagnose" },
       { href: "/how-it-works", label: "How it works" },
       { href: "/services", label: "Services" },
       { href: "/status", label: "Status" },

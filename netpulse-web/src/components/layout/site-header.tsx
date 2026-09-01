@@ -32,7 +32,7 @@ export function SiteHeader() {
           <Button
             nativeButton={false}
             className="hidden sm:inline-flex"
-            render={<Link href="/#diagnose" />}
+            render={<Link href="/diagnose" />}
           >
             Check My Internet
           </Button>

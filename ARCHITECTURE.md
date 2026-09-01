@@ -101,8 +101,8 @@ Proposed route map (product, not yet implemented):
 | Route | Purpose |
 | --- | --- |
 | `/` | Product home: what NetPulse diagnoses; no fake live metrics |
-| `/diagnose` | Start a measurement run |
-| `/diagnose/[runId]` | Evidence, isolation, score, explanation, recommendations |
+| `/diagnose` | Start a measurement run; `?run=` shows the current report |
+| `/reports/[id]` | Stored report model (process-local until PostgreSQL) |
 | `/status` | Service health (only from real status sources) |
 | `/observatory` | Regional / ASN comparison (when data exists) |
 | `/account` | Session, devices, telemetry controls |

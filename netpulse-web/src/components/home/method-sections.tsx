@@ -185,7 +185,7 @@ export function FinalCtaSection() {
         <p className="mt-2 max-w-xl text-muted-foreground">
           The form validates input now. Probes start when workers are connected.
         </p>
-        <Button className="mt-6" nativeButton={false} render={<Link href="#diagnose" />}>
+        <Button className="mt-6" nativeButton={false} render={<Link href="/diagnose" />}>
           Check My Internet
         </Button>
       </PageContainer>

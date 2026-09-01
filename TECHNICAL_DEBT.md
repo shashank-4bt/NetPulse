@@ -18,7 +18,7 @@ Severity:
 
 ### 1.1 Greenfield gap (P0)
 
-The working tree had **no application** at Stage 01. Stage 02 added `netpulse-web/` (Next.js design system). Diagnostic product surfaces still do not exist. The public GitHub repo must not be described as a running measurement product.
+The working tree had **no application** at Stage 01. Stage 02 added `netpulse-web/` (Next.js design system). Stage 04 added `/diagnose` and `/reports/[id]`, but they persist **unavailable** reports in a process-local Map. The public GitHub repo must not be described as a running measurement product.
 
 ### 1.2 Missing toolchain (P0) — **partially fixed in Stage 02**
 
@@ -38,19 +38,23 @@ The working tree had **no application** at Stage 01. Stage 02 added `netpulse-we
 
 ### 1.4 No environment contract (P1) — **web slice fixed in Stage 02**
 
-`netpulse-web/.env.example` documents `NEXT_PUBLIC_SITE_URL` only. API env contract remains for Stage 04.
+`netpulse-web/.env.example` documents `NEXT_PUBLIC_SITE_URL` only. API env contract remains for the Go API stage.
 
 ### 1.5 No SSRF policy implementation (P1)
 
 Architecture requires deny lists for loopback, private networks, link-local, and cloud metadata, plus redirect revalidation.
 
-**When to fix:** Stage 04–05 with unit tests **before** any worker performs network I/O.
+**Frontend (Stage 04):** `validateDiagnoseTarget` rejects unsafe schemes, credentials, localhost, private IPv4, link-local, and blocked IPv6. This is not worker-side SSRF. Redirect revalidation still does not exist because no fetch is issued.
+
+**When to fix:** Stage 05 with unit tests **before** any worker performs network I/O.
 
 ### 1.6 No evidence type system (P1)
 
 Without discriminated unions in code, a future UI can accidentally show hypotheses as facts.
 
-**When to fix:** Stage 03, before any diagnose results UI.
+**Partial (Stage 04):** `src/domain/diagnostic.ts` models report, evidence, hypotheses, and confidence separately. The engine still does not emit measured facts.
+
+**When to fix:** when workers persist observations.
 
 ### 1.7 No auth session design in code (P1)
 
@@ -113,14 +117,15 @@ The product source of truth was provided in the engineering contract (chat). In-
 
 | ID | Sev | Item | Target stage |
 | --- | --- | --- | --- |
-| TD-003b | P1 | API env / config schema | 04 |
-| TD-004 | P1 | Full diagnostic evidence model (beyond display taxonomies) | 03 |
-| TD-005 | P1 | No API or workers | 04 / 05 |
-| TD-006 | P1 | No SSRF implementation | 04 / 05 |
+| TD-003b | P1 | API env / config schema | later API |
+| TD-004 | P1 | Full diagnostic evidence model (beyond display taxonomies + report types) | workers |
+| TD-005 | P1 | No API or workers | 05 |
+| TD-006 | P1 | No worker SSRF / redirect revalidation | 05 |
 | TD-007 | P1 | No auth (when required) | 08 |
 | TD-008 | P2 | No CI | 09 |
 | TD-009 | P2 | No local Compose for Postgres/Redis | 09 |
 | TD-010 | P2 | Product spec only in chat + Stage 01 docs | later docs |
+| TD-011 | P1 | Diagnostic reports are process-local (in-memory Map) | persistent store |
 
 ---
 
@@ -129,6 +134,15 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Public marketing routes are live. Status, outages, map, and service health use `getPublicHealthSnapshot()` and remain **unavailable**.
 - Diagnose form validates hosts (including private/loopback rejection) but does not send probes.
 - `/design-system` is noindex.
+
+## 9. Stage 04 notes
+
+- `/diagnose` accepts domain, URL, or catalog service and writes a `DiagnosticReport` with outcome `measurement_unavailable`.
+- `/reports/[id]` reads the same process-local Map. Reports are lost on restart and are not shared across instances.
+- Result UI always has Likely cause, Confidence, Evidence, Alternative hypotheses, Recommended action, and Verification. Empty fields stay empty; the 87% routing example is not used as data.
+- Step progress is a count of complete / unavailable / failed / total. No invented percentages.
+- ECharts is not installed. Technical details use expandable blocks; `ChartContainer` stays `unavailable`.
+- `robots.txt` disallows `/reports`. Sitemap includes `/diagnose` only.
 
 ## 7. Stage 02 decisions
 

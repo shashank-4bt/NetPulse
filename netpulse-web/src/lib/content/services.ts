@@ -67,6 +67,13 @@ export const SERVICE_CATALOG: readonly ServiceCatalogEntry[] = [
     summary: "Meeting join paths and media edge connectivity.",
     layers: ["Connectivity", "ISP", "Routing", "TLS", "Service"],
   },
+  {
+    slug: "instagram",
+    name: "Instagram",
+    category: "Social",
+    summary: "App and web media endpoints.",
+    layers: ["DNS", "CDN", "TLS", "HTTP", "Service"],
+  },
 ] as const;
 
 export function getServiceBySlug(
