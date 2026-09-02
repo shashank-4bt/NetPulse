@@ -10,7 +10,7 @@ type ReportApiContext = {
   params: Promise<{ id: string }>;
 };
 
-export async function GET(_request: Request, context: ReportApiContext) {
+export async function GET(request: Request, context: ReportApiContext) {
   const { id } = await context.params;
   const reportId = parseReportId(id);
   if (!reportId) {
@@ -20,7 +20,8 @@ export async function GET(_request: Request, context: ReportApiContext) {
     );
   }
 
-  const loaded = await loadDiagnosis(reportId);
+  const share = new URL(request.url).searchParams.get("share");
+  const loaded = await loadDiagnosis(reportId, share);
   const report = loaded.report;
   if (!report) {
     return NextResponse.json(

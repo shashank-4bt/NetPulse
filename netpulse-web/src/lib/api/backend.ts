@@ -81,8 +81,25 @@ type Envelope = {
     storage?: Record<string, string>;
   };
   map?: Record<string, unknown>;
+  user?: Record<string, unknown>;
+  session?: Record<string, unknown>;
+  sessions?: Record<string, unknown>[];
+  events?: Record<string, unknown>[];
+  auth?: Record<string, unknown>;
+  dashboard?: Record<string, unknown>;
+  diagnoses?: Record<string, unknown>[];
+  reports?: Record<string, unknown>[];
+  savedServices?: Record<string, unknown>[];
+  devices?: Record<string, unknown>[];
+  alerts?: Record<string, unknown>;
+  billing?: Record<string, unknown>;
+  privacy?: Record<string, unknown>;
+  share?: Record<string, unknown>;
+  sessionToken?: string;
   error?: { code?: string; message?: string };
 };
+
+export type BackendEnvelope = Envelope;
 
 function isApiFailure(
   value: { status: number; body: Envelope } | ApiFailure
@@ -90,9 +107,9 @@ function isApiFailure(
   return "ok" in value && value.ok === false;
 }
 
-async function request(
+export async function apiRequest(
   path: string,
-  init: RequestInit & { timeoutMs?: number } = {}
+  init: RequestInit & { timeoutMs?: number; session?: string | null } = {}
 ): Promise<{ status: number; body: Envelope } | ApiFailure> {
   const base = getApiBaseUrl();
   if (!base) {
@@ -100,13 +117,16 @@ async function request(
   }
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), init.timeoutMs ?? 10000);
+  const { session, ...rest } = init;
+  delete rest.timeoutMs;
   try {
     const response = await fetch(`${base}${path}`, {
-      ...init,
+      ...rest,
       signal: controller.signal,
       headers: {
         Accept: "application/json",
         ...(init.body ? { "Content-Type": "application/json" } : {}),
+        ...(session ? { Authorization: `Session ${session}` } : {}),
         ...init.headers,
       },
       cache: "no-store",
@@ -125,7 +145,7 @@ async function request(
   }
 }
 
-function asFailure(status: number, body: Envelope): ApiFailure {
+export function asApiFailure(status: number, body: Envelope): ApiFailure {
   return apiFailure(
     parseErrorCode(body.error?.code),
     body.error?.message ?? "Request failed.",
@@ -133,13 +153,19 @@ function asFailure(status: number, body: Envelope): ApiFailure {
   );
 }
 
+function asFailure(status: number, body: Envelope): ApiFailure {
+  return asApiFailure(status, body);
+}
+
 export async function postDiagnosis(
-  target: string
+  target: string,
+  session?: string | null
 ): Promise<{ ok: true; diagnosis: BackendDiagnosis } | ApiFailure> {
-  const result = await request("/v1/diagnoses", {
+  const result = await apiRequest("/v1/diagnoses", {
     method: "POST",
     body: JSON.stringify({ target }),
     timeoutMs: 12000,
+    session,
   });
   if (isApiFailure(result)) {
     return result;
@@ -152,9 +178,14 @@ export async function postDiagnosis(
 }
 
 export async function getDiagnosis(
-  id: string
+  id: string,
+  options: { session?: string | null; share?: string | null } = {}
 ): Promise<{ ok: true; diagnosis: BackendDiagnosis } | ApiFailure> {
-  const result = await request(`/v1/diagnoses/${id}`, { timeoutMs: 8000 });
+  const suffix = options.share ? `?share=${encodeURIComponent(options.share)}` : "";
+  const result = await apiRequest(`/v1/diagnoses/${id}${suffix}`, {
+    timeoutMs: 8000,
+    session: options.session,
+  });
   if (isApiFailure(result)) {
     return result;
   }
@@ -180,7 +211,7 @@ export async function getBackendIncidents(
   }
   const encoded = params.toString();
   const suffix = encoded ? `?${encoded}` : "";
-  const result = await request(`/v1/incidents${suffix}`);
+  const result = await apiRequest(`/v1/incidents${suffix}`);
   if (isApiFailure(result)) {
     return result;
   }
@@ -199,7 +230,7 @@ export async function getBackendIncidents(
 export async function getBackendIncident(
   id: string
 ): Promise<{ ok: true; incident: BackendIncident } | ApiFailure> {
-  const result = await request(`/v1/incidents/${id}`);
+  const result = await apiRequest(`/v1/incidents/${id}`);
   if (isApiFailure(result)) {
     return result;
   }
@@ -219,7 +250,7 @@ export async function getBackendService(
   | { ok: true; service: BackendService; intelligence: ServiceIntelligence }
   | ApiFailure
 > {
-  const result = await request(`/v1/services/${slug}`);
+  const result = await apiRequest(`/v1/services/${slug}`);
   if (isApiFailure(result)) {
     return result;
   }
@@ -237,7 +268,7 @@ export async function getBackendService(
 export async function getBackendServices(): Promise<
   { ok: true; services: BackendService[] } | ApiFailure
 > {
-  const result = await request("/v1/services");
+  const result = await apiRequest("/v1/services");
   if (isApiFailure(result)) {
     return result;
   }
@@ -277,7 +308,7 @@ export async function getBackendMapAggregates(
     params.set("east", String(query.viewport.east));
     params.set("north", String(query.viewport.north));
   }
-  const result = await request(`/v1/map/aggregates?${params.toString()}`);
+  const result = await apiRequest(`/v1/map/aggregates?${params.toString()}`);
   if (isApiFailure(result)) {
     return result;
   }

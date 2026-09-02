@@ -15,6 +15,8 @@ const STATIC_PATHS = [
   "/trust",
   "/privacy",
   "/security",
+  "/login",
+  "/register",
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {

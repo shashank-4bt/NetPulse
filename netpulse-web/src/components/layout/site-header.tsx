@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AuthNav } from "@/components/layout/auth-nav";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { PageContainer } from "@/components/layout/page-container";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -36,6 +37,7 @@ export function SiteHeader() {
           >
             Check My Internet
           </Button>
+          <AuthNav />
           <ThemeToggle />
           <MobileNav links={MOBILE_NAV} />
         </div>

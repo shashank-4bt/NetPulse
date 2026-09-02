@@ -1,9 +1,9 @@
 package contract
 
 const (
-	ModelVersion       = "0.8.0"
-	EngineVersion      = "0.8.0"
-	RuleVersion        = "0.8.0-map-aggregates"
+	ModelVersion       = "0.9.0"
+	EngineVersion      = "0.9.0"
+	RuleVersion        = "0.9.0-user-platform"
 	MeasurementVersion = "0.6.0-dns-tcp-tls-http"
 	ObservedFailures   = "Elevated connectivity failures observed"
 	ConfidenceCaveat   = "Confidence is not certainty. A level or percentage can be wrong and must not be treated as proof."
@@ -161,6 +161,21 @@ type Envelope struct {
 	Page         *Page                `json:"page,omitempty"`
 	Health       *Health              `json:"health,omitempty"`
 	Map          *MapAggregates       `json:"map,omitempty"`
+	User         *User                `json:"user,omitempty"`
+	Session      *Session             `json:"session,omitempty"`
+	Sessions     []Session            `json:"sessions,omitempty"`
+	Events       []SecurityEvent      `json:"events,omitempty"`
+	Auth         *AuthState           `json:"auth,omitempty"`
+	Dashboard    *Dashboard           `json:"dashboard,omitempty"`
+	Diagnoses    []DiagnosisSummary   `json:"diagnoses,omitempty"`
+	Reports      []UserReport         `json:"reports,omitempty"`
+	Saved        []SavedService       `json:"savedServices,omitempty"`
+	Devices      []Device             `json:"devices,omitempty"`
+	Alerts       *AlertPreferences    `json:"alerts,omitempty"`
+	Billing      *Billing             `json:"billing,omitempty"`
+	Privacy      *PrivacySettings     `json:"privacy,omitempty"`
+	Share        *ShareLink           `json:"share,omitempty"`
+	SessionToken string               `json:"sessionToken,omitempty"`
 	Error        *APIError            `json:"error,omitempty"`
 }
 
@@ -233,6 +248,164 @@ type Page struct {
 	Number int `json:"number"`
 	Size   int `json:"size"`
 	Total  int `json:"total"`
+}
+
+type User struct {
+	ID             string `json:"id"`
+	Email          string `json:"email"`
+	DisplayName    string `json:"displayName"`
+	EmailVerified  bool   `json:"emailVerified"`
+	CreatedAt      string `json:"createdAt"`
+	TelemetryOptIn bool   `json:"telemetryOptIn"`
+}
+
+type Session struct {
+	ID         string `json:"id"`
+	UserID     string `json:"-"`
+	TokenHash  string `json:"-"`
+	CreatedAt  string `json:"createdAt"`
+	LastSeenAt string `json:"lastSeenAt"`
+	ExpiresAt  string `json:"expiresAt"`
+	Current    bool   `json:"current"`
+	Revoked    bool   `json:"revoked"`
+	UserAgent  string `json:"userAgent"`
+	IP         string `json:"ip"`
+	Label      string `json:"label"`
+}
+
+type SecurityEvent struct {
+	ID      string `json:"id"`
+	UserID  string `json:"-"`
+	Kind    string `json:"kind"`
+	At      string `json:"at"`
+	Summary string `json:"summary"`
+	IP      string `json:"ip"`
+}
+
+type AuthMethods struct {
+	Password bool     `json:"password"`
+	OAuth    []string `json:"oauth"`
+	Passkeys int      `json:"passkeys"`
+	MFA      []string `json:"mfa"`
+}
+
+type AuthState struct {
+	EmailSent   bool        `json:"emailSent"`
+	EmailReason string      `json:"emailReason,omitempty"`
+	DevToken    string      `json:"devToken,omitempty"`
+	Methods     AuthMethods `json:"methods"`
+}
+
+type DiagnosisSummary struct {
+	ID        string  `json:"id"`
+	Target    string  `json:"target"`
+	Status    string  `json:"status"`
+	Outcome   *string `json:"outcome"`
+	CreatedAt string  `json:"createdAt"`
+}
+
+type UserReport struct {
+	ID        string  `json:"id"`
+	Target    string  `json:"target"`
+	Status    string  `json:"status"`
+	Shared    bool    `json:"shared"`
+	CreatedAt string  `json:"createdAt"`
+	Outcome   *string `json:"outcome"`
+}
+
+type SavedService struct {
+	Slug      string `json:"slug"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type Device struct {
+	ID        string `json:"id"`
+	Label     string `json:"label"`
+	UserAgent string `json:"userAgent"`
+	IP        string `json:"ip"`
+	LastSeen  string `json:"lastSeenAt"`
+	Current   bool   `json:"current"`
+	Kind      string `json:"kind"`
+}
+
+type AlertPreferences struct {
+	EmailEnabled   bool   `json:"emailEnabled"`
+	IncidentAlerts bool   `json:"incidentAlerts"`
+	DeliveredCount int    `json:"deliveredCount"`
+	Summary        string `json:"summary"`
+}
+
+type Billing struct {
+	HasAccount       bool           `json:"hasAccount"`
+	OrganizationID   *string        `json:"organizationId"`
+	Plan             *string        `json:"plan"`
+	Invoices         []BillingInvoice `json:"invoices"`
+	Summary          string         `json:"summary"`
+}
+
+type BillingInvoice struct {
+	ID     string `json:"id"`
+	Amount string `json:"amount"`
+	Status string `json:"status"`
+}
+
+type PrivacySettings struct {
+	TelemetryOptIn bool   `json:"telemetryOptIn"`
+	Retention      string `json:"retention"`
+	Deletion       string `json:"deletion"`
+	Collected      string `json:"collected"`
+	Purpose        string `json:"purpose"`
+	BrowsingHistory string `json:"browsingHistory"`
+}
+
+type ShareLink struct {
+	Token   string `json:"token"`
+	Path    string `json:"path"`
+	Summary string `json:"summary"`
+}
+
+type Dashboard struct {
+	InternetHealth string              `json:"internetHealth"`
+	NetworkInfo    string              `json:"networkInfo"`
+	Diagnoses      []DiagnosisSummary  `json:"diagnoses"`
+	SavedServices  []SavedService      `json:"savedServices"`
+	Incidents      []Incident          `json:"incidents"`
+	Reports        []UserReport        `json:"reports"`
+	Alerts         AlertPreferences    `json:"alerts"`
+}
+
+func EmptyAuthMethods() AuthMethods {
+	return AuthMethods{Password: true, OAuth: []string{}, Passkeys: 0, MFA: []string{}}
+}
+
+func EmptyBilling() Billing {
+	return Billing{
+		HasAccount:     false,
+		OrganizationID: nil,
+		Plan:           nil,
+		Invoices:       []BillingInvoice{},
+		Summary:        "No billing account. Organizations and invoices are not enabled.",
+	}
+}
+
+func DefaultPrivacy() PrivacySettings {
+	return PrivacySettings{
+		TelemetryOptIn: false,
+		Collected:      "Account email, password hash, session metadata, diagnoses you start while signed in, and saved service slugs.",
+		Purpose:        "Sign-in, session security, and showing your own diagnosis history. Not advertising.",
+		Retention:      "Sessions expire after 7 days of inactivity policy or on revoke. Raw probe observations stay short-lived. Exact store TTLs are not claimed beyond that.",
+		Deletion:       "You can delete the account. That removes the user, sessions, tokens, saved services, and owned diagnoses from this store.",
+		BrowsingHistory: "NetPulse does not collect a browsing history. Diagnosis uses only the target you submit.",
+	}
+}
+
+func EmptyAlerts() AlertPreferences {
+	return AlertPreferences{
+		EmailEnabled:   false,
+		IncidentAlerts: false,
+		DeliveredCount: 0,
+		Summary:        "No alerts have been delivered. Notification delivery is not configured.",
+	}
 }
 
 type Health struct {

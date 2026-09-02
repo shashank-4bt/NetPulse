@@ -17,6 +17,14 @@ type Store struct {
 	rate         map[string][]time.Time
 	cache        map[string]cacheItem
 	measurements map[string][]contract.Measurement
+	users        map[string]storage.UserRecord
+	emailIndex   map[string]string
+	sessions      map[string]contract.Session
+	sessionByHash map[string]string
+	tokens        map[string]storage.TokenRecord
+	events       []contract.SecurityEvent
+	saved        map[string][]contract.SavedService
+	shares       map[string]storage.ShareRecord
 }
 
 type cacheItem struct {
@@ -32,6 +40,14 @@ func New() *Store {
 		rate:         map[string][]time.Time{},
 		cache:        map[string]cacheItem{},
 		measurements: map[string][]contract.Measurement{},
+		users:        map[string]storage.UserRecord{},
+		emailIndex:   map[string]string{},
+		sessions:      map[string]contract.Session{},
+		sessionByHash: map[string]string{},
+		tokens:        map[string]storage.TokenRecord{},
+		events:       []contract.SecurityEvent{},
+		saved:        map[string][]contract.SavedService{},
+		shares:       map[string]storage.ShareRecord{},
 	}
 }
 
@@ -57,6 +73,26 @@ func (s *Store) UpdateDiagnosis(_ context.Context, rec storage.DiagnosisRecord) 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.diagnoses[rec.Diagnosis.ID] = rec
+	return nil
+}
+
+func (s *Store) ListDiagnosesByUser(_ context.Context, userID string) ([]storage.DiagnosisRecord, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := []storage.DiagnosisRecord{}
+	for _, rec := range s.diagnoses {
+		if rec.UserID != "" && rec.UserID == userID {
+			out = append(out, rec)
+		}
+	}
+	return out, nil
+}
+
+func (s *Store) DeleteDiagnosis(_ context.Context, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.diagnoses, id)
+	delete(s.measurements, id)
 	return nil
 }
 

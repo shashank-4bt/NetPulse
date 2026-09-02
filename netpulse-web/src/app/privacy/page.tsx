@@ -18,7 +18,7 @@ export default function PrivacyPage() {
       <PageHero
         eyebrow="Privacy"
         title="Data minimization"
-        description="This page describes intended practice. The public site does not collect diagnostic telemetry today because workers are not connected."
+        description="Signed-in accounts store email, a password hash, session metadata, and diagnoses you start. Browsing history is not collected."
       />
       <PageContainer className="max-w-2xl space-y-8 py-10 text-sm text-muted-foreground md:text-base">
         <section aria-labelledby="collect-heading" className="space-y-2">
@@ -45,9 +45,9 @@ export default function PrivacyPage() {
             Telemetry
           </h2>
           <p>
-            Product telemetry, when introduced, will be documented and
-            controllable. This website does not send diagnostic telemetry from
-            the browser to a measurement backend.
+            Product telemetry is off by default and can be changed in
+            account privacy settings. This website does not send diagnostic
+            telemetry from the browser, and it does not record browsing history.
           </p>
         </section>
         <section aria-labelledby="retain-heading" className="space-y-2">

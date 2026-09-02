@@ -5,6 +5,17 @@ import (
 	"fmt"
 )
 
+func RandomHex(n int) string {
+	if n < 1 {
+		n = 32
+	}
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%x", b)
+}
+
 func New() string {
 	var b [16]byte
 	if _, err := rand.Read(b[:]); err != nil {

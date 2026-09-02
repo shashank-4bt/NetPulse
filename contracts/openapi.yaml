@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: NetPulse API
-  version: 0.8.0
-  description: Versioned JSON contract for diagnoses, services, incidents, and map aggregates. No invented health.
+  version: 0.9.0
+  description: Versioned JSON contract for diagnoses, services, incidents, map aggregates, and the user platform. No invented health. Auth tokens are session ids, never localStorage.
 servers:
   - url: http://localhost:8080
 paths:
@@ -159,6 +159,156 @@ paths:
           description: Aggregated cells only. Empty means none stored.
         "503":
           description: Store unavailable
+  /v1/auth/register:
+    post:
+      summary: Create an account
+      responses:
+        "201":
+          description: Account created. sessionToken is for the BFF cookie only.
+        "409":
+          description: Email already registered
+  /v1/auth/login:
+    post:
+      summary: Sign in
+      responses:
+        "200":
+          description: Session established
+        "401":
+          description: Generic email or password failure
+  /v1/auth/logout:
+    post:
+      summary: Revoke the current session
+  /v1/auth/me:
+    get:
+      summary: Current user
+  /v1/auth/verify-email:
+    post:
+      summary: Consume an email verification token
+  /v1/auth/resend-verification:
+    post:
+      summary: Create another verification token. Email is not sent.
+  /v1/auth/forgot-password:
+    post:
+      summary: Request a reset. Does not reveal whether the email exists.
+  /v1/auth/reset-password:
+    post:
+      summary: Set a new password and revoke sessions
+  /v1/auth/change-password:
+    post:
+      summary: Change password while signed in
+  /v1/auth/sessions:
+    get:
+      summary: Active sessions for the current user
+  /v1/auth/sessions/{id}/revoke:
+    post:
+      summary: Revoke one of the current user's sessions
+      responses:
+        "404":
+          description: Unknown or foreign session
+  /v1/auth/sessions/revoke-others:
+    post:
+      summary: Revoke every session except the current one
+  /v1/auth/events:
+    get:
+      summary: Security events for the current user
+  /v1/auth/methods:
+    get:
+      summary: Configured auth methods. OAuth, passkeys, and MFA stay empty.
+  /v1/auth/oauth/{provider}:
+    post:
+      responses:
+        "501":
+          description: Provider not configured
+  /v1/auth/passkeys:
+    post:
+      responses:
+        "501":
+          description: Passkeys are not configured
+  /v1/auth/mfa:
+    post:
+      responses:
+        "501":
+          description: MFA is not configured
+  /v1/me/profile:
+    get:
+      summary: Current profile
+    patch:
+      summary: Update display name
+  /v1/me/privacy:
+    get:
+      summary: Privacy explanation and telemetry opt-in
+    put:
+      summary: Update telemetry opt-in
+  /v1/me/deletion:
+    post:
+      summary: Delete the current account and owned data
+  /v1/me/dashboard:
+    get:
+      summary: Honest dashboard snapshot. No invented health score.
+  /v1/me/diagnoses:
+    get:
+      summary: Current user's diagnoses only
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: target
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string }
+        - in: query
+          name: to
+          schema: { type: string }
+  /v1/me/reports:
+    get:
+      summary: Current user's reports
+  /v1/me/reports/{id}/share:
+    post:
+      summary: Create a share token for an owned report
+      responses:
+        "404":
+          description: Unknown or foreign report
+  /v1/me/reports/{id}:
+    delete:
+      summary: Delete an owned report
+      responses:
+        "404":
+          description: Unknown or foreign report
+  /v1/me/saved-services:
+    get:
+      summary: Saved catalog slugs
+    put:
+      summary: Save a catalog slug
+  /v1/me/saved-services/{slug}:
+    delete:
+      summary: Remove a saved slug
+  /v1/me/devices:
+    get:
+      summary: Session devices, not a hardware inventory
+  /v1/me/alerts:
+    get:
+      summary: Alert preferences. deliveredCount is stored, not invented.
+    put:
+      summary: Update alert preferences
+  /v1/me/billing:
+    get:
+      summary: Billing is empty until an organization exists
+  /v1/users/{id}/billing:
+    get:
+      summary: Owner-only billing. Foreign ids return 404.
+  /v1/organizations/{id}:
+    get:
+      responses:
+        "404":
+          description: Organizations are not enabled
+  /v1/shares/{token}:
+    get:
+      summary: Read a report through a share token
 components:
   schemas:
     Error:

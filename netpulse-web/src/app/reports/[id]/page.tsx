@@ -17,14 +17,17 @@ export const dynamic = "force-dynamic";
 
 type ReportPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: ReportPageProps): Promise<Metadata> {
   const { id } = await params;
+  const share = shareToken(await searchParams);
   const reportId = parseReportId(id);
-  const report = reportId ? (await loadDiagnosis(reportId)).report : null;
+  const report = reportId ? (await loadDiagnosis(reportId, share)).report : null;
 
   return {
     title: report ? `Report · ${report.target.hostname}` : "Report",
@@ -34,14 +37,14 @@ export async function generateMetadata({
   };
 }
 
-export default async function ReportPage({ params }: ReportPageProps) {
+export default async function ReportPage({ params, searchParams }: ReportPageProps) {
   const { id } = await params;
   const reportId = parseReportId(id);
   if (!reportId) {
     notFound();
   }
 
-  const loaded = await loadDiagnosis(reportId);
+  const loaded = await loadDiagnosis(reportId, shareToken(await searchParams));
   const report = loaded.report;
 
   return (
@@ -104,4 +107,14 @@ export default async function ReportPage({ params }: ReportPageProps) {
       </PageContainer>
     </main>
   );
+}
+
+function shareToken(
+  params: Record<string, string | string[] | undefined>
+): string | null {
+  const value = params.share;
+  if (Array.isArray(value)) {
+    return value[0] ?? null;
+  }
+  return value ?? null;
 }

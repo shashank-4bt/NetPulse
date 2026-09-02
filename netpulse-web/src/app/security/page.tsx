@@ -36,8 +36,9 @@ export default function SecurityPage() {
             Sessions
           </h2>
           <p>
-            When accounts exist, tokens belong in HTTP-only cookies — not
-            localStorage. This public site has no login.
+            Sessions use the HTTP-only <code>np_session</code> cookie. Tokens
+            are not stored in localStorage. OAuth, passkeys, and MFA endpoints
+            exist but stay unavailable until a provider is configured.
           </p>
         </section>
         <section aria-labelledby="abuse-heading" className="space-y-2">

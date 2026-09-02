@@ -1,8 +1,8 @@
 # NETPULSE Implementation Plan
 
-**Current stage:** 08 — Global internet health map  
-**Date:** 2026-09-01  
-**Status:** Stages 01–08 implemented. `/map` renders MapLibre with aggregated cells only. Empty stores stay empty; the basemap is not a health heatmap.
+**Current stage:** 09 — User platform  
+**Date:** 2026-09-02  
+**Status:** Stages 01–09 implemented. Accounts use an HTTP-only session cookie. Dashboard and account pages stay empty or unavailable rather than inventing health, billing, or alerts.
 
 This plan is derived from:
 
@@ -165,9 +165,18 @@ Stages are sequential. Do not skip foundation. Do not implement a later stage's 
 - Hierarchy World → Country → Region → Network/ASN → Service. Layers do not invent health colors.
 - Table alternative, mobile summary/filter, no precise individual locations.
 
-The original plan listed accounts here. Accounts remain deferred.
+The original plan listed accounts here. Accounts shipped as Stage 09.
 
-### Stage 09 — Hardening & operations
+### Stage 09 — User platform *(this repo)*
+
+- Go owns users, password hashes, sessions, verification/reset tokens, and authorization.
+- Next.js is a cookie BFF (`np_session`, HTTP-only, SameSite=Lax). No auth tokens in `localStorage`.
+- Register, login, logout, email verification, password reset, session revoke, security events.
+- `/dashboard`, `/dashboard/history`, `/dashboard/reports`, and `/account/*`.
+- OAuth, passkeys, and MFA routes exist and return unavailable until a provider is configured.
+- Cross-user reads of diagnoses, reports, devices, organizations, and billing return 404.
+
+### Stage 10 — Hardening & operations
 
 - CI (lint, typecheck, test, build).
 - Rate limits, WAF later if needed.
@@ -175,7 +184,7 @@ The original plan listed accounts here. Accounts remain deferred.
 - Structured logging, correlation ids.
 - Load/error budgets for diagnose endpoints.
 
-### Stage 10 — Future Internet Observatory (deferred)
+### Stage 11 — Future Internet Observatory (deferred)
 
 - Kafka/Redpanda, object storage, Neo4j, ECS/Fargate, Terraform, Cloudflare — **only with a written need**.
 
@@ -233,4 +242,4 @@ Do not mark a stage complete with known critical issues.
 
 ## 7. Next recommended stage
 
-**Stage 09 — Hardening & operations:** CI, Compose for local stores, and operational budgets. Accounts and developer monitoring remain deferred until those surfaces have real data.
+**Stage 10 — Hardening & operations:** CI, Compose for local stores, and operational budgets. Developer monitoring remains deferred until those surfaces have real data.

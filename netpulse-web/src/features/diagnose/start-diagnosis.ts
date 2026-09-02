@@ -7,6 +7,7 @@ import {
   isApiConfigured,
   postDiagnosis,
 } from "@/lib/api/backend";
+import { readSessionToken } from "@/lib/auth/session";
 import { saveReport } from "@/lib/reports/store";
 
 export type StartDiagnosisResult =
@@ -25,14 +26,15 @@ export async function startDiagnosis(raw: string): Promise<StartDiagnosisResult>
     return { ok: true, reportId: report.reportId };
   }
 
-  const created = await postDiagnosis(raw);
+  const session = await readSessionToken();
+  const created = await postDiagnosis(raw, session);
   if (!created.ok) {
     return { ok: false, error: created.message };
   }
 
   const deadline = Date.now() + 12000;
   while (Date.now() < deadline) {
-    const latest = await getDiagnosis(created.diagnosis.id);
+    const latest = await getDiagnosis(created.diagnosis.id, { session });
     if (latest.ok && latest.diagnosis.report) {
       saveReport(latest.diagnosis.report);
       return { ok: true, reportId: created.diagnosis.id };

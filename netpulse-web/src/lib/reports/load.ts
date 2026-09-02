@@ -1,5 +1,6 @@
 import { getDiagnosis, isApiConfigured } from "@/lib/api/backend";
 import type { DiagnosticReport } from "@/domain/diagnostic";
+import { readSessionToken } from "@/lib/auth/session";
 import { getReport, saveReport } from "@/lib/reports/store";
 
 export type LoadedDiagnosis = {
@@ -10,9 +11,15 @@ export type LoadedDiagnosis = {
   backendError: string | null;
 };
 
-export async function loadDiagnosis(id: string): Promise<LoadedDiagnosis> {
+export async function loadDiagnosis(
+  id: string,
+  share?: string | null
+): Promise<LoadedDiagnosis> {
   if (isApiConfigured()) {
-    const result = await getDiagnosis(id);
+    const result = await getDiagnosis(id, {
+      session: await readSessionToken(),
+      share,
+    });
     if (!result.ok) {
       if (result.code === "not_found") {
         return {

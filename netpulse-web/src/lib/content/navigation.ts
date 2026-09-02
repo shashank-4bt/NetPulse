@@ -15,6 +15,7 @@ export const MOBILE_NAV = [
   { href: "/map", label: "Map" },
   { href: "/privacy", label: "Privacy" },
   { href: "/security", label: "Security" },
+  { href: "/login", label: "Sign in" },
 ] as const;
 
 export const FOOTER_COLUMNS = [
@@ -42,6 +43,7 @@ export const FOOTER_COLUMNS = [
     links: [
       { href: "/privacy", label: "Privacy" },
       { href: "/security", label: "Security" },
+      { href: "/login", label: "Sign in" },
     ],
   },
 ] as const;

@@ -20,7 +20,7 @@ type Service struct {
 	Now   func() time.Time
 }
 
-func (s *Service) Create(ctx context.Context, raw string) (*contract.Diagnosis, *contract.APIError, int) {
+func (s *Service) Create(ctx context.Context, raw, userID string) (*contract.Diagnosis, *contract.APIError, int) {
 	parsed := validation.ParseTarget(raw)
 	if parsed.Err != nil {
 		code := parsed.Code
@@ -40,7 +40,7 @@ func (s *Service) Create(ctx context.Context, raw string) (*contract.Diagnosis, 
 		Status:  "queued",
 		Created: now.UTC().Format(time.RFC3339),
 	}
-	rec := storage.DiagnosisRecord{Diagnosis: diag, Target: contract.Target{
+	rec := storage.DiagnosisRecord{Diagnosis: diag, UserID: strings.TrimSpace(userID), Target: contract.Target{
 		Raw: parsed.Target.Raw, Hostname: parsed.Target.Hostname, Kind: parsed.Target.Kind, ServiceSlug: parsed.Target.ServiceSlug,
 	}}
 	if err := s.Store.CreateDiagnosis(ctx, rec); err != nil {
@@ -53,6 +53,15 @@ func (s *Service) Create(ctx context.Context, raw string) (*contract.Diagnosis, 
 }
 
 func (s *Service) Get(ctx context.Context, diagnosisID string) (*contract.Diagnosis, *contract.APIError, int) {
+	rec, apiErr, status := s.GetRecord(ctx, diagnosisID)
+	if apiErr != nil {
+		return nil, apiErr, status
+	}
+	copy := rec.Diagnosis
+	return &copy, nil, 200
+}
+
+func (s *Service) GetRecord(ctx context.Context, diagnosisID string) (*storage.DiagnosisRecord, *contract.APIError, int) {
 	rec, err := s.Store.GetDiagnosis(ctx, diagnosisID)
 	if err != nil {
 		return nil, &contract.APIError{Code: "unavailable", Message: "diagnose store is unavailable"}, 503
@@ -60,7 +69,7 @@ func (s *Service) Get(ctx context.Context, diagnosisID string) (*contract.Diagno
 	if rec == nil {
 		return nil, &contract.APIError{Code: "not_found", Message: "diagnosis not found"}, 404
 	}
-	copy := rec.Diagnosis
+	copy := *rec
 	return &copy, nil, 200
 }
 

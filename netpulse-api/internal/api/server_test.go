@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/accounts"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/api"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/contract"
@@ -38,8 +39,9 @@ func setup(t *testing.T) (*httptest.Server, *memory.Store, *worker.Worker) {
 		}},
 	}}
 	server := &api.Server{
-		Cfg:         config.Config{CORSOrigin: "http://localhost:3000", RateLimitPerMin: 20, EngineVersion: "0.6.0"},
+		Cfg:         config.Config{CORSOrigin: "http://localhost:3000", RateLimitPerMin: 40, EngineVersion: "0.9.0", AuthDevTokens: true, SessionTTLHours: 168},
 		Diagnostics: svc,
+		Accounts:    &accounts.Service{Accounts: store, Diagnoses: store, DevTokens: true, SessionTTL: 7 * 24 * time.Hour},
 		Limiter:     store,
 		StorageInfo: map[string]string{"postgres": "memory", "clickhouse": "memory", "redis": "memory"},
 	}

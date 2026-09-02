@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/accounts"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/contract"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/diagnostics"
@@ -20,6 +21,7 @@ type Server struct {
 	Cfg         config.Config
 	Log         *slog.Logger
 	Diagnostics *diagnostics.Service
+	Accounts    *accounts.Service
 	Limiter     storage.RateLimiter
 	StorageInfo map[string]string
 }
@@ -34,6 +36,43 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/incidents", s.listIncidents)
 	mux.HandleFunc("GET /v1/incidents/{id}", s.getIncident)
 	mux.HandleFunc("GET /v1/map/aggregates", s.mapAggregates)
+	mux.HandleFunc("POST /v1/auth/register", s.register)
+	mux.HandleFunc("POST /v1/auth/login", s.login)
+	mux.HandleFunc("POST /v1/auth/logout", s.logout)
+	mux.HandleFunc("GET /v1/auth/me", s.me)
+	mux.HandleFunc("POST /v1/auth/verify-email", s.verifyEmail)
+	mux.HandleFunc("POST /v1/auth/resend-verification", s.resendVerification)
+	mux.HandleFunc("POST /v1/auth/forgot-password", s.forgotPassword)
+	mux.HandleFunc("POST /v1/auth/reset-password", s.resetPassword)
+	mux.HandleFunc("POST /v1/auth/change-password", s.changePassword)
+	mux.HandleFunc("GET /v1/auth/sessions", s.listSessions)
+	mux.HandleFunc("POST /v1/auth/sessions/{id}/revoke", s.revokeSession)
+	mux.HandleFunc("POST /v1/auth/sessions/revoke-others", s.revokeOtherSessions)
+	mux.HandleFunc("GET /v1/auth/events", s.listEvents)
+	mux.HandleFunc("GET /v1/auth/methods", s.authMethods)
+	mux.HandleFunc("POST /v1/auth/oauth/{provider}", s.unsupportedFactor)
+	mux.HandleFunc("POST /v1/auth/passkeys", s.unsupportedFactor)
+	mux.HandleFunc("POST /v1/auth/mfa", s.unsupportedFactor)
+	mux.HandleFunc("GET /v1/me/profile", s.meProfile)
+	mux.HandleFunc("PATCH /v1/me/profile", s.patchProfile)
+	mux.HandleFunc("GET /v1/me/privacy", s.mePrivacy)
+	mux.HandleFunc("PUT /v1/me/privacy", s.putPrivacy)
+	mux.HandleFunc("POST /v1/me/deletion", s.deleteAccount)
+	mux.HandleFunc("GET /v1/me/dashboard", s.dashboard)
+	mux.HandleFunc("GET /v1/me/diagnoses", s.myDiagnoses)
+	mux.HandleFunc("GET /v1/me/reports", s.myReports)
+	mux.HandleFunc("POST /v1/me/reports/{id}/share", s.shareReport)
+	mux.HandleFunc("DELETE /v1/me/reports/{id}", s.deleteReport)
+	mux.HandleFunc("GET /v1/me/saved-services", s.listSaved)
+	mux.HandleFunc("PUT /v1/me/saved-services", s.saveService)
+	mux.HandleFunc("DELETE /v1/me/saved-services/{slug}", s.deleteSaved)
+	mux.HandleFunc("GET /v1/me/devices", s.devices)
+	mux.HandleFunc("GET /v1/me/alerts", s.meAlerts)
+	mux.HandleFunc("PUT /v1/me/alerts", s.putAlerts)
+	mux.HandleFunc("GET /v1/me/billing", s.meBilling)
+	mux.HandleFunc("GET /v1/users/{id}/billing", s.userBilling)
+	mux.HandleFunc("GET /v1/organizations/{id}", s.organization)
+	mux.HandleFunc("GET /v1/shares/{token}", s.readShare)
 	return s.middleware(mux)
 }
 
@@ -41,8 +80,8 @@ func (s *Server) middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if origin := s.Cfg.CORSOrigin; origin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-NetPulse-Session")
+			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 		}
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
@@ -81,7 +120,13 @@ func (s *Server) createDiagnosis(w http.ResponseWriter, r *http.Request) {
 		write(w, http.StatusBadRequest, contract.Envelope{Error: &contract.APIError{Code: "validation_error", Message: "Expected JSON with a target"}})
 		return
 	}
-	diag, apiErr, status := s.Diagnostics.Create(r.Context(), body.Target)
+	userID := ""
+	if s.Accounts != nil {
+		if _, user, _, _ := s.Accounts.Require(r.Context(), SessionToken(r)); user != nil {
+			userID = user.ID
+		}
+	}
+	diag, apiErr, status := s.Diagnostics.Create(r.Context(), body.Target, userID)
 	if apiErr != nil {
 		write(w, status, contract.Envelope{Error: apiErr})
 		return
@@ -90,12 +135,26 @@ func (s *Server) createDiagnosis(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getDiagnosis(w http.ResponseWriter, r *http.Request) {
-	diag, apiErr, status := s.Diagnostics.Get(r.Context(), r.PathValue("id"))
+	rec, apiErr, status := s.Diagnostics.GetRecord(r.Context(), r.PathValue("id"))
 	if apiErr != nil {
 		write(w, status, contract.Envelope{Error: apiErr})
 		return
 	}
-	write(w, status, contract.Envelope{OK: true, Diagnosis: diag})
+	viewerID := ""
+	if s.Accounts != nil {
+		if _, user, _, _ := s.Accounts.Require(r.Context(), SessionToken(r)); user != nil {
+			viewerID = user.ID
+		}
+		if !s.Accounts.MayReadDiagnosis(r.Context(), rec, viewerID, r.URL.Query().Get("share")) {
+			write(w, http.StatusNotFound, contract.Envelope{Error: &contract.APIError{Code: "not_found", Message: "diagnosis not found"}})
+			return
+		}
+	} else if rec.UserID != "" {
+		write(w, http.StatusNotFound, contract.Envelope{Error: &contract.APIError{Code: "not_found", Message: "diagnosis not found"}})
+		return
+	}
+	copy := rec.Diagnosis
+	write(w, status, contract.Envelope{OK: true, Diagnosis: &copy})
 }
 
 func (s *Server) listServices(w http.ResponseWriter, r *http.Request) {
@@ -184,6 +243,13 @@ func ClientIP(r *http.Request) string {
 		return strings.TrimSpace(strings.Split(forwarded, ",")[0])
 	}
 	return r.RemoteAddr
+}
+
+func SessionToken(r *http.Request) string {
+	if header := r.Header.Get("Authorization"); strings.HasPrefix(strings.ToLower(header), "session ") {
+		return strings.TrimSpace(header[8:])
+	}
+	return strings.TrimSpace(r.Header.Get("X-NetPulse-Session"))
 }
 
 func NewHTTPServer(addr string, handler http.Handler) *http.Server {

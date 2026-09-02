@@ -7,7 +7,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/accounts"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/api"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/diagnostics"
@@ -46,6 +48,12 @@ func main() {
 	}
 
 	svc := &diagnostics.Service{Store: store, Queue: store}
+	accountSvc := &accounts.Service{
+		Accounts:   store,
+		Diagnoses:  store,
+		DevTokens:  cfg.AuthDevTokens,
+		SessionTTL: time.Duration(cfg.SessionTTLHours) * time.Hour,
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -66,6 +74,7 @@ func main() {
 		Cfg:         cfg,
 		Log:         log,
 		Diagnostics: svc,
+		Accounts:    accountSvc,
 		Limiter:     store,
 		StorageInfo: storageInfo,
 	}

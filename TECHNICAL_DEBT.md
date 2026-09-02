@@ -58,9 +58,7 @@ Without discriminated unions in code, a future UI can accidentally show hypothes
 
 ### 1.7 No auth session design in code (P1)
 
-Contract forbids `localStorage` for auth tokens. Nothing implements sessions yet.
-
-**When to fix:** when account features start (Stage 08, or earlier if diagnose is authenticated).
+**Resolved (Stage 09):** HTTP-only `np_session` cookie, hashed session secrets, bcrypt passwords, and IDOR-safe account resources. OAuth/passkeys/MFA remain unimplemented providers, not fake logins.
 
 ### 1.8 No CI/CD or Docker (P2)
 
@@ -113,6 +111,7 @@ The product source of truth was provided in the engineering contract (chat). In-
 | TD-003b | API env / config schema | 06 |
 | TD-005 | No API or workers | 06 |
 | TD-006 | Worker SSRF / redirect revalidation | 06 |
+| TD-007 | Auth session cookie + authorization boundaries | 09 |
 
 ---
 
@@ -121,9 +120,8 @@ The product source of truth was provided in the engineering contract (chat). In-
 | ID | Sev | Item | Target stage |
 | --- | --- | --- | --- |
 | TD-004 | P1 | User-path isolation still cannot be inferred from worker vantage alone | later probes |
-| TD-007 | P1 | No auth (when required) | later |
-| TD-008 | P2 | No CI | 09 |
-| TD-009 | P2 | No local Compose for Postgres/Redis | 09 |
+| TD-008 | P2 | No CI | 10 |
+| TD-009 | P2 | No local Compose for Postgres/Redis | 10 |
 | TD-010 | P2 | Product spec only in chat + Stage 01 docs | later docs |
 | TD-011 | P1 | Default stores are process-local memory adapters until DSN drivers are linked | persistent store |
 
@@ -180,6 +178,14 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Hierarchy: World → Country → Region → Network/ASN → Service. Click paths match that summary chain. Service cells open `/service/[slug]`.
 - Layers: Global, Regional, Network, Service, Incidents. Status is not_measured or insufficient_evidence until a geo series exists.
 - Next.js BFF `GET /api/map/aggregates` proxies viewport queries using server-side `NETPULSE_API_BASE_URL`.
+
+## 14. Stage 09 notes
+
+- Go owns users, bcrypt password hashes, hashed session secrets, verification/reset tokens, and share tokens. Next.js sets `np_session` as an HTTP-only cookie and forwards `Authorization: Session …`.
+- Foreign diagnoses, reports, sessions, organizations, and billing return 404 without leaking the resource body.
+- Dashboard Internet Health is explanatory text, not a live score. Billing `hasAccount` is false. Alert `deliveredCount` stays at the stored value (0 until delivery exists).
+- OAuth, passkeys, and MFA return 501. Email is not sent; `NETPULSE_AUTH_DEV_TOKENS` may include a unused token for local tests only.
+- Signed-in diagnoses attach `userId`. Anonymous diagnoses remain UUID-accessible.
 
 ## 7. Stage 02 decisions
 
