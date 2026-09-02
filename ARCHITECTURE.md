@@ -210,7 +210,7 @@ Rules:
 
 ### 7.1 Contract style
 
-- Versioned HTTP JSON: `/v1/...` and tenant developer routes under `/v1/dev/...`
+- Versioned HTTP JSON: `/v1/...`, tenant developer routes under `/v1/dev/...`, and organization routes under `/v1/orgs/...`
 - OpenAPI (or equivalent) as source of generated TS types.
 - Zod (web) and Go structs (API) validate at the boundary.
 - Never trust client-supplied evidence, scores, or service status.

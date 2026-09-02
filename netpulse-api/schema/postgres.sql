@@ -227,3 +227,149 @@ CREATE TABLE IF NOT EXISTS usage_counters (
   requests INTEGER NOT NULL DEFAULT 0,
   measurements INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS org_members (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL,
+  UNIQUE (org_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS org_invites (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  role TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_teams (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  member_ids TEXT[] NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_devices (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  label TEXT,
+  region TEXT,
+  network_id UUID,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_networks (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  asn TEXT,
+  region TEXT,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_services (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  slug TEXT,
+  endpoint TEXT,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_monitors (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  target TEXT NOT NULL,
+  type TEXT NOT NULL,
+  regions TEXT[] NOT NULL DEFAULT '{}',
+  frequency_seconds INTEGER NOT NULL,
+  timeout_seconds INTEGER NOT NULL,
+  device_id UUID,
+  network_id UUID,
+  service_id UUID,
+  status TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  check_count INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_checks (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  monitor_id UUID NOT NULL REFERENCES org_monitors(id) ON DELETE CASCADE,
+  region TEXT,
+  network TEXT,
+  asn TEXT,
+  service TEXT,
+  endpoint TEXT,
+  device TEXT,
+  ok BOOLEAN NOT NULL,
+  latency_ms INTEGER,
+  at TIMESTAMPTZ NOT NULL,
+  summary TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_incidents (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  monitor_id UUID,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL,
+  started_at TIMESTAMPTZ NOT NULL,
+  resolved_at TIMESTAMPTZ,
+  device_ids TEXT[] NOT NULL DEFAULT '{}',
+  network_ids TEXT[] NOT NULL DEFAULT '{}',
+  service_ids TEXT[] NOT NULL DEFAULT '{}',
+  regions TEXT[] NOT NULL DEFAULT '{}',
+  sample_count INTEGER NOT NULL DEFAULT 0,
+  summary TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_diagnoses (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  diagnosis_id UUID NOT NULL,
+  target TEXT NOT NULL,
+  status TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL,
+  summary TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_reports (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,
+  title TEXT NOT NULL,
+  document JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_api_keys (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  prefix TEXT NOT NULL,
+  last4 TEXT NOT NULL,
+  hash TEXT NOT NULL UNIQUE,
+  scopes TEXT[] NOT NULL,
+  rate_limit_per_min INTEGER NOT NULL,
+  revoked BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL,
+  last_used_at TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS org_audit (
+  id UUID PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  actor_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  at TIMESTAMPTZ NOT NULL,
+  summary TEXT NOT NULL
+);

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/accounts"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/business"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/contract"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/developer"
@@ -24,6 +25,7 @@ type Server struct {
 	Diagnostics *diagnostics.Service
 	Accounts    *accounts.Service
 	Developer   *developer.Service
+	Business    *business.Service
 	Limiter     storage.RateLimiter
 	StorageInfo map[string]string
 }
@@ -102,6 +104,48 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("DELETE /v1/dev/alerts/{id}", s.deleteDevAlert)
 	mux.HandleFunc("GET /v1/dev/usage", s.devUsage)
 	mux.HandleFunc("GET /v1/dev/sla", s.devSLA)
+	mux.HandleFunc("GET /v1/orgs", s.listOrgs)
+	mux.HandleFunc("POST /v1/orgs", s.createOrg)
+	mux.HandleFunc("GET /v1/orgs/{orgId}", s.getOrg)
+	mux.HandleFunc("PATCH /v1/orgs/{orgId}", s.patchOrg)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/dashboard", s.orgDashboard)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/analytics", s.orgAnalytics)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/members", s.listOrgMembers)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/members", s.inviteOrgMember)
+	mux.HandleFunc("PATCH /v1/orgs/{orgId}/members/{id}", s.patchOrgMember)
+	mux.HandleFunc("DELETE /v1/orgs/{orgId}/members/{id}", s.deleteOrgMember)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/invites", s.listOrgInvites)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/teams", s.listOrgTeams)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/teams", s.createOrgTeam)
+	mux.HandleFunc("PATCH /v1/orgs/{orgId}/teams/{id}", s.patchOrgTeam)
+	mux.HandleFunc("DELETE /v1/orgs/{orgId}/teams/{id}", s.deleteOrgTeam)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/devices", s.listOrgDevices)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/devices", s.createOrgDevice)
+	mux.HandleFunc("DELETE /v1/orgs/{orgId}/devices/{id}", s.deleteOrgDevice)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/networks", s.listOrgNetworks)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/networks", s.createOrgNetwork)
+	mux.HandleFunc("DELETE /v1/orgs/{orgId}/networks/{id}", s.deleteOrgNetwork)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/services", s.listOrgServices)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/services", s.createOrgService)
+	mux.HandleFunc("DELETE /v1/orgs/{orgId}/services/{id}", s.deleteOrgService)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/monitors", s.listOrgMonitors)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/monitors", s.createOrgMonitor)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/monitors/{id}", s.getOrgMonitor)
+	mux.HandleFunc("DELETE /v1/orgs/{orgId}/monitors/{id}", s.deleteOrgMonitor)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/incidents", s.listOrgIncidents)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/incidents/{id}", s.getOrgIncident)
+	mux.HandleFunc("PATCH /v1/orgs/{orgId}/incidents/{id}", s.patchOrgIncident)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/reports", s.listOrgReports)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/reports", s.createOrgReport)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/reports/{id}", s.getOrgReport)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/diagnoses", s.listOrgDiagnoses)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/diagnoses", s.createOrgDiagnosis)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/keys", s.listOrgKeys)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/keys", s.createOrgKey)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/keys/{id}/rotate", s.rotateOrgKey)
+	mux.HandleFunc("POST /v1/orgs/{orgId}/keys/{id}/revoke", s.revokeOrgKey)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/billing", s.orgBilling)
+	mux.HandleFunc("GET /v1/orgs/{orgId}/audit", s.orgAudit)
 	return s.middleware(mux)
 }
 

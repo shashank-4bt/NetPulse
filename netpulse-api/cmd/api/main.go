@@ -11,6 +11,7 @@ import (
 
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/accounts"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/api"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/business"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/developer"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/diagnostics"
@@ -60,6 +61,11 @@ func main() {
 		Store:  store,
 		Runner: measurements.NewRunner(),
 	}
+	businessSvc := &business.Service{
+		Store:     store,
+		Accounts:  store,
+		Diagnoses: svc,
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -83,6 +89,7 @@ func main() {
 		Diagnostics: svc,
 		Accounts:    accountSvc,
 		Developer:   developerSvc,
+		Business:    businessSvc,
 		Limiter:     store,
 		StorageInfo: storageInfo,
 	}

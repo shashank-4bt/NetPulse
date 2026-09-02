@@ -37,6 +37,21 @@ type Store struct {
 	alertRules    map[string]contract.AlertRule
 	devIncidents  map[string]contract.DeveloperIncident
 	usage         map[string]contract.Usage
+	orgs          map[string]contract.Organization
+	members       map[string]contract.Member
+	invites       map[string]contract.OrgInvite
+	teams         map[string]contract.Team
+	orgDevices    map[string]contract.OrgDevice
+	orgNetworks   map[string]contract.OrgNetwork
+	orgServices   map[string]contract.OrgService
+	orgMonitors   map[string]contract.Monitor
+	orgChecks     []contract.MonitorCheck
+	orgIncidents  map[string]contract.OrgIncident
+	orgDiagnoses  map[string]contract.OrgDiagnosis
+	orgReports    map[string]contract.OrgReport
+	orgKeys       map[string]contract.APIKey
+	orgKeyHash    map[string]string
+	audit         []contract.AuditEvent
 }
 
 type cacheItem struct {
@@ -72,6 +87,21 @@ func New() *Store {
 		alertRules:     map[string]contract.AlertRule{},
 		devIncidents:   map[string]contract.DeveloperIncident{},
 		usage:          map[string]contract.Usage{},
+		orgs:           map[string]contract.Organization{},
+		members:        map[string]contract.Member{},
+		invites:        map[string]contract.OrgInvite{},
+		teams:          map[string]contract.Team{},
+		orgDevices:     map[string]contract.OrgDevice{},
+		orgNetworks:    map[string]contract.OrgNetwork{},
+		orgServices:    map[string]contract.OrgService{},
+		orgMonitors:    map[string]contract.Monitor{},
+		orgChecks:      []contract.MonitorCheck{},
+		orgIncidents:   map[string]contract.OrgIncident{},
+		orgDiagnoses:   map[string]contract.OrgDiagnosis{},
+		orgReports:     map[string]contract.OrgReport{},
+		orgKeys:        map[string]contract.APIKey{},
+		orgKeyHash:     map[string]string{},
+		audit:          []contract.AuditEvent{},
 	}
 }
 

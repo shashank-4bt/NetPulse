@@ -185,7 +185,16 @@ The original plan listed accounts here. Accounts shipped as Stage 09.
 - Usage and SLA use stored counters and check samples. Empty series do not invent availability or percentiles.
 - Tenant isolation: foreign monitors, keys, webhooks, workspaces, usage, and SLA return 404.
 
-### Stage 11 — Hardening & operations
+### Stage 11 — Business platform *(this repo)*
+
+- `/business/dashboard`, `/business/devices`, `/business/networks`, `/business/services`, `/business/incidents`, `/business/analytics`, `/business/reports`, `/business/team`, `/business/settings`.
+- Organizations, members, roles, permissions, teams, devices, networks, services, org monitors, org incidents, and generated reports.
+- RBAC: owner, admin, security_admin, developer, analyst, viewer, billing_admin.
+- Cross-organization reads return 404. Missing permission on a membership returns 403.
+- Organization API keys (`npo_`) are hashed. Raw secrets return once. Keys cannot mint other keys.
+- Org billing stays empty (`hasAccount: false`). Dashboard/analytics/reports stay unmeasured until stored checks exist.
+
+### Stage 12 — Hardening & operations
 
 - CI (lint, typecheck, test, build).
 - Rate limits, WAF later if needed.
@@ -193,7 +202,7 @@ The original plan listed accounts here. Accounts shipped as Stage 09.
 - Structured logging, correlation ids.
 - Load/error budgets for diagnose endpoints.
 
-### Stage 12 — Future Internet Observatory (deferred)
+### Stage 13 — Future Internet Observatory (deferred)
 
 - Kafka/Redpanda, object storage, Neo4j, ECS/Fargate, Terraform, Cloudflare — **only with a written need**.
 
@@ -251,4 +260,4 @@ Do not mark a stage complete with known critical issues.
 
 ## 7. Next recommended stage
 
-**Stage 11 — Hardening & operations:** CI, Compose for local stores, and operational budgets.
+**Stage 12 — Hardening & operations:** CI, Compose for local stores, and operational budgets.

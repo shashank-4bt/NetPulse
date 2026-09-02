@@ -4,6 +4,7 @@ export const PRIMARY_NAV = [
   { href: "/services", label: "Services" },
   { href: "/status", label: "Status" },
   { href: "/developers", label: "Developers" },
+  { href: "/business", label: "Business" },
   { href: "/trust", label: "Trust" },
 ] as const;
 
@@ -35,6 +36,7 @@ export const FOOTER_COLUMNS = [
     links: [
       { href: "/about", label: "About" },
       { href: "/developers", label: "Developers" },
+      { href: "/business", label: "Business" },
       { href: "/trust", label: "Trust" },
     ],
   },

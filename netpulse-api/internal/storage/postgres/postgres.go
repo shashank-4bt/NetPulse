@@ -206,3 +206,157 @@ func (s *Store) IncrUsage(context.Context, string, string, int) error { return E
 func (s *Store) GetUsage(context.Context, string) (contract.Usage, error) {
 	return contract.Usage{}, ErrNotConfigured
 }
+func (s *Store) CreateOrg(context.Context, contract.Organization) error { return ErrNotConfigured }
+func (s *Store) GetOrg(context.Context, string) (*contract.Organization, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateOrg(context.Context, contract.Organization) error { return ErrNotConfigured }
+func (s *Store) ListOrgsForUser(context.Context, string) ([]contract.Organization, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) CreateMember(context.Context, contract.Member) error { return ErrNotConfigured }
+func (s *Store) GetMember(context.Context, string, string) (*contract.Member, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) GetMemberByUser(context.Context, string, string) (*contract.Member, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListMembers(context.Context, string) ([]contract.Member, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateMember(context.Context, contract.Member) error { return ErrNotConfigured }
+func (s *Store) DeleteMember(context.Context, string, string) (bool, error) {
+	return false, ErrNotConfigured
+}
+func (s *Store) CreateInvite(context.Context, contract.OrgInvite) error { return ErrNotConfigured }
+func (s *Store) ListInvites(context.Context, string) ([]contract.OrgInvite, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListInvitesByEmail(context.Context, string) ([]contract.OrgInvite, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) DeleteInvite(context.Context, string, string) (bool, error) {
+	return false, ErrNotConfigured
+}
+func (s *Store) CreateTeam(context.Context, contract.Team) error { return ErrNotConfigured }
+func (s *Store) GetTeam(context.Context, string) (*contract.Team, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListTeams(context.Context, string) ([]contract.Team, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateTeam(context.Context, contract.Team) error { return ErrNotConfigured }
+func (s *Store) DeleteTeam(context.Context, string, string) (bool, error) {
+	return false, ErrNotConfigured
+}
+func (s *Store) CreateOrgDevice(context.Context, contract.OrgDevice) error {
+	return ErrNotConfigured
+}
+func (s *Store) GetOrgDevice(context.Context, string) (*contract.OrgDevice, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListOrgDevices(context.Context, string) ([]contract.OrgDevice, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateOrgDevice(context.Context, contract.OrgDevice) error {
+	return ErrNotConfigured
+}
+func (s *Store) DeleteOrgDevice(context.Context, string, string) (bool, error) {
+	return false, ErrNotConfigured
+}
+func (s *Store) CreateOrgNetwork(context.Context, contract.OrgNetwork) error {
+	return ErrNotConfigured
+}
+func (s *Store) GetOrgNetwork(context.Context, string) (*contract.OrgNetwork, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListOrgNetworks(context.Context, string) ([]contract.OrgNetwork, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateOrgNetwork(context.Context, contract.OrgNetwork) error {
+	return ErrNotConfigured
+}
+func (s *Store) DeleteOrgNetwork(context.Context, string, string) (bool, error) {
+	return false, ErrNotConfigured
+}
+func (s *Store) CreateOrgService(context.Context, contract.OrgService) error {
+	return ErrNotConfigured
+}
+func (s *Store) GetOrgService(context.Context, string) (*contract.OrgService, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListOrgServices(context.Context, string) ([]contract.OrgService, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateOrgService(context.Context, contract.OrgService) error {
+	return ErrNotConfigured
+}
+func (s *Store) DeleteOrgService(context.Context, string, string) (bool, error) {
+	return false, ErrNotConfigured
+}
+func (s *Store) CreateOrgMonitor(context.Context, contract.Monitor) error {
+	return ErrNotConfigured
+}
+func (s *Store) GetOrgMonitor(context.Context, string) (*contract.Monitor, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListOrgMonitors(context.Context, string) ([]contract.Monitor, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateOrgMonitor(context.Context, contract.Monitor) error {
+	return ErrNotConfigured
+}
+func (s *Store) DeleteOrgMonitor(context.Context, string, string) (bool, error) {
+	return false, ErrNotConfigured
+}
+func (s *Store) AddOrgCheck(context.Context, contract.MonitorCheck) error {
+	return ErrNotConfigured
+}
+func (s *Store) ListOrgChecks(context.Context, string, string) ([]contract.MonitorCheck, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) CreateOrgIncident(context.Context, contract.OrgIncident) error {
+	return ErrNotConfigured
+}
+func (s *Store) GetOrgIncident(context.Context, string) (*contract.OrgIncident, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListOrgIncidents(context.Context, string) ([]contract.OrgIncident, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateOrgIncident(context.Context, contract.OrgIncident) error {
+	return ErrNotConfigured
+}
+func (s *Store) CreateOrgDiagnosis(context.Context, contract.OrgDiagnosis) error {
+	return ErrNotConfigured
+}
+func (s *Store) ListOrgDiagnoses(context.Context, string) ([]contract.OrgDiagnosis, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) GetOrgDiagnosis(context.Context, string) (*contract.OrgDiagnosis, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) CreateOrgReport(context.Context, contract.OrgReport) error {
+	return ErrNotConfigured
+}
+func (s *Store) GetOrgReport(context.Context, string) (*contract.OrgReport, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListOrgReports(context.Context, string) ([]contract.OrgReport, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) CreateOrgKey(context.Context, contract.APIKey) error { return ErrNotConfigured }
+func (s *Store) GetOrgKey(context.Context, string) (*contract.APIKey, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) GetOrgKeyByHash(context.Context, string) (*contract.APIKey, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListOrgKeys(context.Context, string) ([]contract.APIKey, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateOrgKey(context.Context, contract.APIKey) error { return ErrNotConfigured }
+func (s *Store) AddAudit(context.Context, contract.AuditEvent) error { return ErrNotConfigured }
+func (s *Store) ListAudit(context.Context, string) ([]contract.AuditEvent, error) {
+	return nil, ErrNotConfigured
+}

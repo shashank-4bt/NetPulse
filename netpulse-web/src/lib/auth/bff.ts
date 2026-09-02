@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { csrfAllowed } from "@/lib/auth/csrf";
-import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth/session";
+import { ORG_COOKIE, orgCookieOptions, SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth/session";
 import { getApiBaseUrl } from "@/lib/api/backend";
 
 type PathParams = { path?: string[] };
 
 export async function proxyAccount(
   request: Request,
-  prefix: "auth" | "me" | "dev",
+  prefix: "auth" | "me" | "dev" | "orgs",
   params: PathParams
 ): Promise<NextResponse> {
   if (!csrfAllowed(request)) {
@@ -32,9 +32,11 @@ export async function proxyAccount(
     );
   }
 
-  const suffix = (params.path ?? []).join("/");
+  const suffix = (params.path ?? []).filter(Boolean).join("/");
   const incoming = new URL(request.url);
-  const target = `${base}/v1/${prefix}/${suffix}${incoming.search}`;
+  const target = suffix
+    ? `${base}/v1/${prefix}/${suffix}${incoming.search}`
+    : `${base}/v1/${prefix}${incoming.search}`;
   const token = cookieValue(request, SESSION_COOKIE);
   const headers = new Headers();
   headers.set("Accept", "application/json");
@@ -95,6 +97,7 @@ export async function proxyAccount(
   }
   if (path === "/logout" || path === "/deletion") {
     response.cookies.set(SESSION_COOKIE, "", { ...sessionCookieOptions(), maxAge: 0 });
+    response.cookies.set(ORG_COOKIE, "", { ...orgCookieOptions(), maxAge: 0 });
   }
   return response;
 }

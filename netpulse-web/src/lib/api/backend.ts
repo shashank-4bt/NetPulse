@@ -114,6 +114,28 @@ type Envelope = {
   developerIncidents?: Record<string, unknown>[];
   developerIncident?: Record<string, unknown>;
   checks?: Record<string, unknown>[];
+  organization?: Record<string, unknown>;
+  organizations?: Record<string, unknown>[];
+  members?: Record<string, unknown>[];
+  member?: Record<string, unknown>;
+  teams?: Record<string, unknown>[];
+  team?: Record<string, unknown>;
+  orgDevices?: Record<string, unknown>[];
+  orgDevice?: Record<string, unknown>;
+  networks?: Record<string, unknown>[];
+  network?: Record<string, unknown>;
+  orgServices?: Record<string, unknown>[];
+  orgService?: Record<string, unknown>;
+  orgIncidents?: Record<string, unknown>[];
+  orgIncident?: Record<string, unknown>;
+  orgDashboard?: Record<string, unknown>;
+  analytics?: Record<string, unknown>;
+  orgReports?: Record<string, unknown>[];
+  orgReport?: Record<string, unknown>;
+  auditEvents?: Record<string, unknown>[];
+  invites?: Record<string, unknown>[];
+  orgDiagnoses?: Record<string, unknown>[];
+  permissions?: string[];
   error?: { code?: string; message?: string };
 };
 

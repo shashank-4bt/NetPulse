@@ -40,6 +40,7 @@ export default function AboutPage() {
           <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground md:text-base">
             <li>People who need to know if an outage is local or remote.</li>
             <li>Developers who need evidence attached to a failing check.</li>
+            <li>Operators who need organization membership, roles, and stored fleet records without invented health scores.</li>
             <li>
               Operators who need regional and ASN comparison without decorative
               dashboards.

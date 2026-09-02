@@ -187,6 +187,15 @@ The product source of truth was provided in the engineering contract (chat). In-
 - OAuth, passkeys, and MFA return 501. Email is not sent; `NETPULSE_AUTH_DEV_TOKENS` may include a unused token for local tests only.
 - Signed-in diagnoses attach `userId`. Anonymous diagnoses remain UUID-accessible.
 
+## 16. Stage 11 notes
+
+- Organizations are first-class tenants. Membership is required for every `/v1/orgs/{orgId}` read. Foreign org ids return 404, not 403, so existence is not leaked.
+- RBAC is role-to-permission. Missing permission on a membership returns 403. Last owner cannot be removed or demoted.
+- Organization API keys (`npo_`) are SHA-256 hashed. Keys cannot create, rotate, or revoke keys.
+- Org billing remains empty (`hasAccount: false`). Dashboard, analytics, and reports stay unmeasured until stored checks exist. Do not close "no live data" with invented org health.
+- Selected org is an HTTP-only `np_org` cookie. No organization id is required in `/business/*` URLs.
+- Postgres tables for members, inventory, org monitors, reports, keys, and audit exist in `schema/postgres.sql`. The runtime adapter remains an unlinked stub.
+
 ## 15. Stage 10 notes
 
 - Developer resources belong to a lazily created personal workspace. Cross-tenant reads return 404.

@@ -1,9 +1,9 @@
 package contract
 
 const (
-	ModelVersion       = "0.10.0"
-	EngineVersion      = "0.10.0"
-	RuleVersion        = "0.10.0-developer-platform"
+	ModelVersion       = "0.11.0"
+	EngineVersion      = "0.11.0"
+	RuleVersion        = "0.11.0-business-platform"
 	MeasurementVersion = "0.6.0-dns-tcp-tls-http"
 	ObservedFailures   = "Elevated connectivity failures observed"
 	ConfidenceCaveat   = "Confidence is not certainty. A level or percentage can be wrong and must not be treated as proof."
@@ -194,6 +194,28 @@ type Envelope struct {
 	DevIncidents   []DeveloperIncident  `json:"developerIncidents,omitempty"`
 	DevIncident    *DeveloperIncident   `json:"developerIncident,omitempty"`
 	Checks         []MonitorCheck       `json:"checks,omitempty"`
+	Organization   *Organization        `json:"organization,omitempty"`
+	Organizations  []Organization       `json:"organizations,omitempty"`
+	Members        []Member             `json:"members,omitempty"`
+	Member         *Member              `json:"member,omitempty"`
+	Teams          []Team               `json:"teams,omitempty"`
+	Team           *Team                `json:"team,omitempty"`
+	OrgDevices     []OrgDevice          `json:"orgDevices,omitempty"`
+	OrgDevice      *OrgDevice           `json:"orgDevice,omitempty"`
+	Networks       []OrgNetwork         `json:"networks,omitempty"`
+	Network        *OrgNetwork          `json:"network,omitempty"`
+	OrgServices    []OrgService         `json:"orgServices,omitempty"`
+	OrgService     *OrgService          `json:"orgService,omitempty"`
+	OrgIncidents   []OrgIncident        `json:"orgIncidents,omitempty"`
+	OrgIncident    *OrgIncident         `json:"orgIncident,omitempty"`
+	OrgDashboard   *OrgDashboard        `json:"orgDashboard,omitempty"`
+	Analytics      *OrgAnalytics        `json:"analytics,omitempty"`
+	OrgReports     []OrgReport          `json:"orgReports,omitempty"`
+	OrgReport      *OrgReport           `json:"orgReport,omitempty"`
+	AuditEvents    []AuditEvent         `json:"auditEvents,omitempty"`
+	Invites        []OrgInvite          `json:"invites,omitempty"`
+	OrgDiagnoses   []OrgDiagnosis       `json:"orgDiagnoses,omitempty"`
+	Permissions    []string             `json:"permissions,omitempty"`
 	Error          *APIError            `json:"error,omitempty"`
 }
 
@@ -433,6 +455,10 @@ type MonitorThresholds struct {
 type Monitor struct {
 	ID          string            `json:"id"`
 	WorkspaceID string            `json:"-"`
+	OrgID       string            `json:"-"`
+	DeviceID    *string           `json:"deviceId"`
+	NetworkID   *string           `json:"networkId"`
+	ServiceID   *string           `json:"serviceId"`
 	Name        string            `json:"name"`
 	Target      string            `json:"target"`
 	Type        string            `json:"type"`
@@ -451,6 +477,12 @@ type MonitorCheck struct {
 	ID          string `json:"id"`
 	MonitorID   string `json:"monitorId"`
 	WorkspaceID string `json:"-"`
+	OrgID       string `json:"-"`
+	Network     string `json:"network,omitempty"`
+	ASN         string `json:"asn,omitempty"`
+	Service     string `json:"service,omitempty"`
+	Endpoint    string `json:"endpoint,omitempty"`
+	Device      string `json:"device,omitempty"`
 	Region      string `json:"region"`
 	OK          bool   `json:"ok"`
 	LatencyMs   *int   `json:"latencyMs"`
@@ -461,6 +493,7 @@ type MonitorCheck struct {
 type APIKey struct {
 	ID             string   `json:"id"`
 	WorkspaceID    string   `json:"-"`
+	OrgID          string   `json:"-"`
 	Name           string   `json:"name"`
 	Prefix         string   `json:"prefix"`
 	Last4          string   `json:"last4"`
@@ -727,5 +760,179 @@ func CurrentVersions() Versions {
 		RuleVersion:             RuleVersion,
 		MeasurementVersion:      MeasurementVersion,
 		ModelVersion:            ModelVersion,
+	}
+}
+
+type Organization struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	Role      string `json:"role,omitempty"`
+	Summary   string `json:"summary"`
+}
+
+type Member struct {
+	ID          string   `json:"id"`
+	OrgID       string   `json:"-"`
+	UserID      string   `json:"userId"`
+	Email       string   `json:"email"`
+	DisplayName string   `json:"displayName"`
+	Role        string   `json:"role"`
+	Permissions []string `json:"permissions"`
+	CreatedAt   string   `json:"createdAt"`
+}
+
+type OrgInvite struct {
+	ID        string `json:"id"`
+	OrgID     string `json:"-"`
+	Email     string `json:"email"`
+	Role      string `json:"role"`
+	CreatedAt string `json:"createdAt"`
+	Summary   string `json:"summary"`
+}
+
+type Team struct {
+	ID        string   `json:"id"`
+	OrgID     string   `json:"-"`
+	Name      string   `json:"name"`
+	MemberIDs []string `json:"memberIds"`
+	CreatedAt string   `json:"createdAt"`
+	Summary   string   `json:"summary"`
+}
+
+type OrgDevice struct {
+	ID        string  `json:"id"`
+	OrgID     string  `json:"-"`
+	Name      string  `json:"name"`
+	Label     string  `json:"label"`
+	Region    string  `json:"region"`
+	NetworkID *string `json:"networkId"`
+	Summary   string  `json:"summary"`
+	CreatedAt string  `json:"createdAt"`
+}
+
+type OrgNetwork struct {
+	ID        string `json:"id"`
+	OrgID     string `json:"-"`
+	Name      string `json:"name"`
+	ASN       string `json:"asn"`
+	Region    string `json:"region"`
+	Summary   string `json:"summary"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type OrgService struct {
+	ID        string `json:"id"`
+	OrgID     string `json:"-"`
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
+	Endpoint  string `json:"endpoint"`
+	Summary   string `json:"summary"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type OrgIncident struct {
+	ID          string   `json:"id"`
+	OrgID       string   `json:"-"`
+	MonitorID   string   `json:"monitorId"`
+	Title       string   `json:"title"`
+	Status      string   `json:"status"`
+	StartedAt   string   `json:"startedAt"`
+	ResolvedAt  *string  `json:"resolvedAt"`
+	DeviceIDs   []string `json:"deviceIds"`
+	NetworkIDs  []string `json:"networkIds"`
+	ServiceIDs  []string `json:"serviceIds"`
+	Regions     []string `json:"regions"`
+	SampleCount int      `json:"sampleCount"`
+	Summary     string   `json:"summary"`
+}
+
+type OrgDiagnosis struct {
+	ID          string `json:"id"`
+	OrgID       string `json:"-"`
+	DiagnosisID string `json:"diagnosisId"`
+	Target      string `json:"target"`
+	Status      string `json:"status"`
+	CreatedAt   string `json:"createdAt"`
+	Summary     string `json:"summary"`
+}
+
+type OrgDashboard struct {
+	OverallHealth string          `json:"overallHealth"`
+	Availability  Observation     `json:"availability"`
+	Incidents     []OrgIncident   `json:"incidents"`
+	Devices       []OrgDevice     `json:"affectedDevices"`
+	Regions       []RegionalSlice `json:"regions"`
+	Networks      []OrgNetwork    `json:"networks"`
+	Services      []OrgService    `json:"services"`
+	Summary       string          `json:"summary"`
+}
+
+type OrgAnalytics struct {
+	Filters      map[string]string `json:"filters"`
+	Availability Observation       `json:"availability"`
+	Latency      PercentilePoint   `json:"latency"`
+	SampleCount  int               `json:"sampleCount"`
+	Incidents    []OrgIncident     `json:"incidents"`
+	Summary      string            `json:"summary"`
+}
+
+type OrgReport struct {
+	ID            string          `json:"id"`
+	OrgID         string          `json:"-"`
+	Kind          string          `json:"kind"`
+	Title         string          `json:"title"`
+	Availability  Observation     `json:"availability"`
+	Latency       PercentilePoint `json:"latency"`
+	Incidents     []OrgIncident   `json:"incidents"`
+	Regions       []RegionalSlice `json:"regions"`
+	Networks      []OrgNetwork    `json:"networks"`
+	Findings      []string        `json:"findings"`
+	SampleCount   int             `json:"sampleCount"`
+	CreatedAt     string          `json:"createdAt"`
+	Summary       string          `json:"summary"`
+}
+
+type AuditEvent struct {
+	ID        string `json:"id"`
+	OrgID     string `json:"-"`
+	ActorID   string `json:"actorId"`
+	Kind      string `json:"kind"`
+	At        string `json:"at"`
+	Summary   string `json:"summary"`
+}
+
+func EmptyOrgDashboard() OrgDashboard {
+	return OrgDashboard{
+		OverallHealth: "Not measured. No stored organization checks exist.",
+		Availability:  UnmeasuredObservation("Availability"),
+		Incidents:     []OrgIncident{},
+		Devices:       []OrgDevice{},
+		Regions:       []RegionalSlice{},
+		Networks:      []OrgNetwork{},
+		Services:      []OrgService{},
+		Summary:       "Organization health is computed from stored checks only. Empty series stay unmeasured.",
+	}
+}
+
+func EmptyOrgAnalytics() OrgAnalytics {
+	return OrgAnalytics{
+		Filters:      map[string]string{},
+		Availability: UnmeasuredObservation("Availability"),
+		Latency:      EmptyPercentiles(),
+		Incidents:    []OrgIncident{},
+		Summary:      "No stored samples match the selected filters.",
+	}
+}
+
+func EmptyOrgBilling(orgID string) Billing {
+	id := orgID
+	return Billing{
+		HasAccount:     false,
+		OrganizationID: &id,
+		Plan:           nil,
+		Invoices:       []BillingInvoice{},
+		Summary:        "No billing account is stored for this organization. Invoices are not enabled.",
 	}
 }

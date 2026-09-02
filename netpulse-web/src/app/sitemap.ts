@@ -12,6 +12,7 @@ const STATIC_PATHS = [
   "/outages",
   "/map",
   "/developers",
+  "/business",
   "/trust",
   "/privacy",
   "/security",

@@ -141,3 +141,64 @@ type DeveloperStore interface {
 	IncrUsage(ctx context.Context, workspaceID, field string, delta int) error
 	GetUsage(ctx context.Context, workspaceID string) (contract.Usage, error)
 }
+
+type BusinessStore interface {
+	CreateOrg(ctx context.Context, org contract.Organization) error
+	GetOrg(ctx context.Context, id string) (*contract.Organization, error)
+	UpdateOrg(ctx context.Context, org contract.Organization) error
+	ListOrgsForUser(ctx context.Context, userID string) ([]contract.Organization, error)
+	CreateMember(ctx context.Context, member contract.Member) error
+	GetMember(ctx context.Context, orgID, memberID string) (*contract.Member, error)
+	GetMemberByUser(ctx context.Context, orgID, userID string) (*contract.Member, error)
+	ListMembers(ctx context.Context, orgID string) ([]contract.Member, error)
+	UpdateMember(ctx context.Context, member contract.Member) error
+	DeleteMember(ctx context.Context, orgID, memberID string) (bool, error)
+	CreateInvite(ctx context.Context, invite contract.OrgInvite) error
+	ListInvites(ctx context.Context, orgID string) ([]contract.OrgInvite, error)
+	ListInvitesByEmail(ctx context.Context, email string) ([]contract.OrgInvite, error)
+	DeleteInvite(ctx context.Context, orgID, inviteID string) (bool, error)
+	CreateTeam(ctx context.Context, team contract.Team) error
+	GetTeam(ctx context.Context, id string) (*contract.Team, error)
+	ListTeams(ctx context.Context, orgID string) ([]contract.Team, error)
+	UpdateTeam(ctx context.Context, team contract.Team) error
+	DeleteTeam(ctx context.Context, orgID, id string) (bool, error)
+	CreateOrgDevice(ctx context.Context, item contract.OrgDevice) error
+	GetOrgDevice(ctx context.Context, id string) (*contract.OrgDevice, error)
+	ListOrgDevices(ctx context.Context, orgID string) ([]contract.OrgDevice, error)
+	UpdateOrgDevice(ctx context.Context, item contract.OrgDevice) error
+	DeleteOrgDevice(ctx context.Context, orgID, id string) (bool, error)
+	CreateOrgNetwork(ctx context.Context, item contract.OrgNetwork) error
+	GetOrgNetwork(ctx context.Context, id string) (*contract.OrgNetwork, error)
+	ListOrgNetworks(ctx context.Context, orgID string) ([]contract.OrgNetwork, error)
+	UpdateOrgNetwork(ctx context.Context, item contract.OrgNetwork) error
+	DeleteOrgNetwork(ctx context.Context, orgID, id string) (bool, error)
+	CreateOrgService(ctx context.Context, item contract.OrgService) error
+	GetOrgService(ctx context.Context, id string) (*contract.OrgService, error)
+	ListOrgServices(ctx context.Context, orgID string) ([]contract.OrgService, error)
+	UpdateOrgService(ctx context.Context, item contract.OrgService) error
+	DeleteOrgService(ctx context.Context, orgID, id string) (bool, error)
+	CreateOrgMonitor(ctx context.Context, item contract.Monitor) error
+	GetOrgMonitor(ctx context.Context, id string) (*contract.Monitor, error)
+	ListOrgMonitors(ctx context.Context, orgID string) ([]contract.Monitor, error)
+	UpdateOrgMonitor(ctx context.Context, item contract.Monitor) error
+	DeleteOrgMonitor(ctx context.Context, orgID, id string) (bool, error)
+	AddOrgCheck(ctx context.Context, check contract.MonitorCheck) error
+	ListOrgChecks(ctx context.Context, orgID, monitorID string) ([]contract.MonitorCheck, error)
+	CreateOrgIncident(ctx context.Context, item contract.OrgIncident) error
+	GetOrgIncident(ctx context.Context, id string) (*contract.OrgIncident, error)
+	ListOrgIncidents(ctx context.Context, orgID string) ([]contract.OrgIncident, error)
+	UpdateOrgIncident(ctx context.Context, item contract.OrgIncident) error
+	CreateOrgDiagnosis(ctx context.Context, item contract.OrgDiagnosis) error
+	ListOrgDiagnoses(ctx context.Context, orgID string) ([]contract.OrgDiagnosis, error)
+	GetOrgDiagnosis(ctx context.Context, id string) (*contract.OrgDiagnosis, error)
+	CreateOrgReport(ctx context.Context, item contract.OrgReport) error
+	GetOrgReport(ctx context.Context, id string) (*contract.OrgReport, error)
+	ListOrgReports(ctx context.Context, orgID string) ([]contract.OrgReport, error)
+	CreateOrgKey(ctx context.Context, key contract.APIKey) error
+	GetOrgKey(ctx context.Context, id string) (*contract.APIKey, error)
+	GetOrgKeyByHash(ctx context.Context, hash string) (*contract.APIKey, error)
+	ListOrgKeys(ctx context.Context, orgID string) ([]contract.APIKey, error)
+	UpdateOrgKey(ctx context.Context, key contract.APIKey) error
+	AddAudit(ctx context.Context, event contract.AuditEvent) error
+	ListAudit(ctx context.Context, orgID string) ([]contract.AuditEvent, error)
+}

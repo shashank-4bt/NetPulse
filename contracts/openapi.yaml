@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: NetPulse API
-  version: 0.10.0
-  description: Versioned JSON contract for diagnoses, services, incidents, map aggregates, the user platform, and the developer workspace. No invented health. Auth tokens are session ids or hashed API keys, never localStorage.
+  version: 0.11.0
+  description: Versioned JSON contract for diagnoses, services, incidents, map aggregates, the user platform, the developer workspace, and organizations. No invented health. Auth tokens are session ids or hashed API keys, never localStorage.
 servers:
   - url: http://localhost:8080
 paths:
@@ -303,9 +303,7 @@ paths:
       summary: Owner-only billing. Foreign ids return 404.
   /v1/organizations/{id}:
     get:
-      responses:
-        "404":
-          description: Organizations are not enabled
+      summary: Member-only organization. Foreign or unknown ids return 404.
   /v1/shares/{token}:
     get:
       summary: Read a report through a share token
@@ -385,6 +383,121 @@ paths:
   /v1/dev/sla:
     get:
       summary: Stored-check SLA ratios. Percentiles require at least five latency samples.
+  /v1/orgs:
+    get:
+      summary: Organizations the signed-in user belongs to
+    post:
+      summary: Create an organization. Creator becomes owner.
+  /v1/orgs/{orgId}:
+    get:
+      summary: Member-only organization. Foreign ids return 404.
+    patch:
+      summary: Rename an organization. Requires team.manage.
+  /v1/orgs/{orgId}/dashboard:
+    get:
+      summary: Stored-check org dashboard. Empty series stay unmeasured.
+  /v1/orgs/{orgId}/analytics:
+    get:
+      summary: Filter stored checks by region, network, ASN, service, endpoint, or device
+  /v1/orgs/{orgId}/members:
+    get:
+      summary: List members of the organization
+    post:
+      summary: Invite by email. Requires team.manage. Unknown emails store an invite without confirming the account exists.
+  /v1/orgs/{orgId}/members/{id}:
+    patch:
+      summary: Change a member role. Last owner cannot be demoted.
+    delete:
+      summary: Remove a member. Last owner cannot be removed. Foreign ids return 404.
+  /v1/orgs/{orgId}/invites:
+    get:
+      summary: Pending invites. Requires team.manage.
+  /v1/orgs/{orgId}/teams:
+    get:
+      summary: List teams
+    post:
+      summary: Create a team. Requires team.manage.
+  /v1/orgs/{orgId}/teams/{id}:
+    patch:
+      summary: Update a team
+    delete:
+      summary: Delete a team
+  /v1/orgs/{orgId}/devices:
+    get:
+      summary: Stored organization devices
+    post:
+      summary: Store a device label. This is not host discovery.
+  /v1/orgs/{orgId}/devices/{id}:
+    delete:
+      summary: Delete an owned device. Foreign ids return 404.
+  /v1/orgs/{orgId}/networks:
+    get:
+      summary: Stored organization networks
+    post:
+      summary: Store a network or ASN record
+  /v1/orgs/{orgId}/networks/{id}:
+    delete:
+      summary: Delete an owned network
+  /v1/orgs/{orgId}/services:
+    get:
+      summary: Stored organization services
+    post:
+      summary: Store a service endpoint for this organization
+  /v1/orgs/{orgId}/services/{id}:
+    delete:
+      summary: Delete an owned organization service
+  /v1/orgs/{orgId}/monitors:
+    get:
+      summary: Organization monitors. Separate from /v1/dev monitors.
+    post:
+      summary: Create an HTTP, DNS, or TLS organization monitor
+  /v1/orgs/{orgId}/monitors/{id}:
+    get:
+      summary: Member-only monitor. Foreign ids return 404.
+    delete:
+      summary: Delete an organization monitor. Requires monitor.delete.
+  /v1/orgs/{orgId}/incidents:
+    get:
+      summary: Organization incidents from stored checks
+  /v1/orgs/{orgId}/incidents/{id}:
+    get:
+      responses:
+        "404":
+          description: Unknown or foreign incident
+    patch:
+      summary: Update incident status. Requires incident.manage.
+  /v1/orgs/{orgId}/reports:
+    get:
+      summary: Stored organization reports
+    post:
+      summary: Generate availability, latency, incidents, regions, network, or findings from stored records
+  /v1/orgs/{orgId}/reports/{id}:
+    get:
+      responses:
+        "404":
+          description: Unknown or foreign report
+  /v1/orgs/{orgId}/diagnoses:
+    get:
+      summary: Organization-linked diagnoses. Requires diagnosis.read.
+    post:
+      summary: Create a diagnosis in the organization. Requires diagnosis.create.
+  /v1/orgs/{orgId}/keys:
+    get:
+      summary: List organization keys. Raw secrets are never included.
+    post:
+      summary: Create an npo_ key. Raw secret is returned once. Session only.
+  /v1/orgs/{orgId}/keys/{id}/rotate:
+    post:
+      summary: Rotate an organization key. Session only.
+  /v1/orgs/{orgId}/keys/{id}/revoke:
+    post:
+      summary: Revoke an organization key. Session only.
+  /v1/orgs/{orgId}/billing:
+    get:
+      summary: Empty until a billing account exists. Requires billing.manage. Foreign orgs return 404.
+  /v1/orgs/{orgId}/audit:
+    get:
+      summary: Stored audit events. Requires audit.read.
 components:
   schemas:
     Error:

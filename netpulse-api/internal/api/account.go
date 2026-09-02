@@ -251,6 +251,22 @@ func (s *Server) userBilling(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) organization(w http.ResponseWriter, r *http.Request) {
+	if s.Business != nil && s.Accounts != nil {
+		_, user, errResp, status := s.Accounts.Require(r.Context(), SessionToken(r))
+		if errResp != nil {
+			write(w, status, contract.Envelope{Error: errResp})
+			return
+		}
+		s.Business.ConsumeInvites(r.Context(), user.ID, user.Email)
+		member, org, errResp, status := s.Business.MemberFor(r.Context(), r.PathValue("id"), user.ID)
+		if errResp != nil {
+			write(w, status, contract.Envelope{Error: errResp})
+			return
+		}
+		org.Role = member.Role
+		write(w, http.StatusOK, contract.Envelope{OK: true, Organization: org})
+		return
+	}
 	if !s.requireAccounts(w) {
 		return
 	}
