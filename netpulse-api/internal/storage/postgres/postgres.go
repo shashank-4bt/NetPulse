@@ -118,3 +118,91 @@ func (s *Store) ListSharesByUser(context.Context, string) ([]storage.ShareRecord
 func (s *Store) DeleteSharesForDiagnosis(context.Context, string) error {
 	return ErrNotConfigured
 }
+func (s *Store) GetOrCreateWorkspace(context.Context, string, string) (contract.Workspace, error) {
+	return contract.Workspace{}, ErrNotConfigured
+}
+func (s *Store) GetWorkspace(context.Context, string) (*contract.Workspace, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) GetWorkspaceByOwner(context.Context, string) (*contract.Workspace, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) CreateMonitor(context.Context, contract.Monitor) error { return ErrNotConfigured }
+func (s *Store) GetMonitor(context.Context, string) (*contract.Monitor, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListMonitors(context.Context, string) ([]contract.Monitor, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateMonitor(context.Context, contract.Monitor) error { return ErrNotConfigured }
+func (s *Store) DeleteMonitor(context.Context, string, string) (bool, error) {
+	return false, ErrNotConfigured
+}
+func (s *Store) AddCheck(context.Context, contract.MonitorCheck) error { return ErrNotConfigured }
+func (s *Store) ListChecks(context.Context, string, string) ([]contract.MonitorCheck, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) CreateAPIKey(context.Context, contract.APIKey) error { return ErrNotConfigured }
+func (s *Store) GetAPIKey(context.Context, string) (*contract.APIKey, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) GetAPIKeyByHash(context.Context, string) (*contract.APIKey, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListAPIKeys(context.Context, string) ([]contract.APIKey, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateAPIKey(context.Context, contract.APIKey) error { return ErrNotConfigured }
+func (s *Store) CreateWebhook(context.Context, contract.Webhook) error {
+	return ErrNotConfigured
+}
+func (s *Store) GetWebhook(context.Context, string) (*contract.Webhook, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListWebhooks(context.Context, string) ([]contract.Webhook, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateWebhook(context.Context, contract.Webhook) error { return ErrNotConfigured }
+func (s *Store) DeleteWebhook(context.Context, string, string) (bool, error) {
+	return false, ErrNotConfigured
+}
+func (s *Store) CreateDelivery(context.Context, contract.WebhookDelivery) error {
+	return ErrNotConfigured
+}
+func (s *Store) GetDeliveryByIdempotency(context.Context, string) (*contract.WebhookDelivery, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) ListDeliveries(context.Context, string, string) ([]contract.WebhookDelivery, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateDelivery(context.Context, contract.WebhookDelivery) error {
+	return ErrNotConfigured
+}
+func (s *Store) CreateAlertRule(context.Context, contract.AlertRule) error {
+	return ErrNotConfigured
+}
+func (s *Store) ListAlertRules(context.Context, string) ([]contract.AlertRule, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateAlertRule(context.Context, contract.AlertRule) error {
+	return ErrNotConfigured
+}
+func (s *Store) DeleteAlertRule(context.Context, string, string) (bool, error) {
+	return false, ErrNotConfigured
+}
+func (s *Store) CreateDevIncident(context.Context, contract.DeveloperIncident) error {
+	return ErrNotConfigured
+}
+func (s *Store) ListDevIncidents(context.Context, string) ([]contract.DeveloperIncident, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) GetDevIncident(context.Context, string) (*contract.DeveloperIncident, error) {
+	return nil, ErrNotConfigured
+}
+func (s *Store) UpdateDevIncident(context.Context, contract.DeveloperIncident) error {
+	return ErrNotConfigured
+}
+func (s *Store) IncrUsage(context.Context, string, string, int) error { return ErrNotConfigured }
+func (s *Store) GetUsage(context.Context, string) (contract.Usage, error) {
+	return contract.Usage{}, ErrNotConfigured
+}

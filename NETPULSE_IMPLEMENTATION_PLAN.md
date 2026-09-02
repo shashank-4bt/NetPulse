@@ -1,8 +1,8 @@
 # NETPULSE Implementation Plan
 
-**Current stage:** 09 — User platform  
+**Current stage:** 10 — Developer platform  
 **Date:** 2026-09-02  
-**Status:** Stages 01–09 implemented. Accounts use an HTTP-only session cookie. Dashboard and account pages stay empty or unavailable rather than inventing health, billing, or alerts.
+**Status:** Stages 01–10 implemented. Signed-in workspaces store HTTP/DNS/TLS monitors, hashed API keys, and signed webhooks. Dashboard and SLA stay unmeasured until checks are stored.
 
 This plan is derived from:
 
@@ -176,7 +176,16 @@ The original plan listed accounts here. Accounts shipped as Stage 09.
 - OAuth, passkeys, and MFA routes exist and return unavailable until a provider is configured.
 - Cross-user reads of diagnoses, reports, devices, organizations, and billing return 404.
 
-### Stage 10 — Hardening & operations
+### Stage 10 — Developer platform *(this repo)*
+
+- `/developers/dashboard`, `/developers/monitors`, `/developers/monitors/[id]`, `/developers/incidents`, `/developers/api`, `/developers/webhooks`, `/developers/usage`, `/developers/sla`.
+- Monitors: HTTP, DNS, TLS with name, target, regions, frequency, timeout, and thresholds. Targets reuse SSRF validation.
+- API keys: create, one-time secret display, rotate, revoke, scopes, per-key rate limits. Only SHA-256 hashes are stored.
+- Webhooks: signed HTTPS deliveries with event id, timestamp, signature, retry, and idempotency. Local/private URLs are rejected.
+- Usage and SLA use stored counters and check samples. Empty series do not invent availability or percentiles.
+- Tenant isolation: foreign monitors, keys, webhooks, workspaces, usage, and SLA return 404.
+
+### Stage 11 — Hardening & operations
 
 - CI (lint, typecheck, test, build).
 - Rate limits, WAF later if needed.
@@ -184,7 +193,7 @@ The original plan listed accounts here. Accounts shipped as Stage 09.
 - Structured logging, correlation ids.
 - Load/error budgets for diagnose endpoints.
 
-### Stage 11 — Future Internet Observatory (deferred)
+### Stage 12 — Future Internet Observatory (deferred)
 
 - Kafka/Redpanda, object storage, Neo4j, ECS/Fargate, Terraform, Cloudflare — **only with a written need**.
 
@@ -242,4 +251,4 @@ Do not mark a stage complete with known critical issues.
 
 ## 7. Next recommended stage
 
-**Stage 10 — Hardening & operations:** CI, Compose for local stores, and operational budgets. Developer monitoring remains deferred until those surfaces have real data.
+**Stage 11 — Hardening & operations:** CI, Compose for local stores, and operational budgets.

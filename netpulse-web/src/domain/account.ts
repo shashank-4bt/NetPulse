@@ -167,4 +167,5 @@ export const DASHBOARD_NAV = [
   { href: "/dashboard", label: "Overview" },
   { href: "/dashboard/history", label: "History" },
   { href: "/dashboard/reports", label: "Reports" },
+  { href: "/developers/dashboard", label: "Developers" },
 ] as const;

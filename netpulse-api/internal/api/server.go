@@ -11,6 +11,7 @@ import (
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/accounts"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/contract"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/developer"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/diagnostics"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/geo"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/incidents"
@@ -22,6 +23,7 @@ type Server struct {
 	Log         *slog.Logger
 	Diagnostics *diagnostics.Service
 	Accounts    *accounts.Service
+	Developer   *developer.Service
 	Limiter     storage.RateLimiter
 	StorageInfo map[string]string
 }
@@ -73,6 +75,33 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/users/{id}/billing", s.userBilling)
 	mux.HandleFunc("GET /v1/organizations/{id}", s.organization)
 	mux.HandleFunc("GET /v1/shares/{token}", s.readShare)
+	mux.HandleFunc("GET /v1/dev/workspace", s.devWorkspace)
+	mux.HandleFunc("GET /v1/dev/workspaces/{id}", s.getDevWorkspace)
+	mux.HandleFunc("GET /v1/dev/dashboard", s.devDashboard)
+	mux.HandleFunc("GET /v1/dev/monitors", s.listDevMonitors)
+	mux.HandleFunc("POST /v1/dev/monitors", s.createDevMonitor)
+	mux.HandleFunc("GET /v1/dev/monitors/{id}", s.getDevMonitor)
+	mux.HandleFunc("PATCH /v1/dev/monitors/{id}", s.patchDevMonitor)
+	mux.HandleFunc("DELETE /v1/dev/monitors/{id}", s.deleteDevMonitor)
+	mux.HandleFunc("POST /v1/dev/monitors/{id}/run", s.runDevMonitor)
+	mux.HandleFunc("GET /v1/dev/incidents", s.listDevIncidents)
+	mux.HandleFunc("GET /v1/dev/incidents/{id}", s.getDevIncident)
+	mux.HandleFunc("GET /v1/dev/keys", s.listDevKeys)
+	mux.HandleFunc("POST /v1/dev/keys", s.createDevKey)
+	mux.HandleFunc("POST /v1/dev/keys/{id}/rotate", s.rotateDevKey)
+	mux.HandleFunc("POST /v1/dev/keys/{id}/revoke", s.revokeDevKey)
+	mux.HandleFunc("GET /v1/dev/webhooks", s.listDevWebhooks)
+	mux.HandleFunc("POST /v1/dev/webhooks", s.createDevWebhook)
+	mux.HandleFunc("POST /v1/dev/webhooks/{id}/rotate", s.rotateDevWebhook)
+	mux.HandleFunc("DELETE /v1/dev/webhooks/{id}", s.deleteDevWebhook)
+	mux.HandleFunc("GET /v1/dev/webhooks/{id}/deliveries", s.listDevDeliveries)
+	mux.HandleFunc("POST /v1/dev/webhooks/{id}/retry", s.retryDevDeliveries)
+	mux.HandleFunc("GET /v1/dev/alerts", s.listDevAlerts)
+	mux.HandleFunc("POST /v1/dev/alerts", s.createDevAlert)
+	mux.HandleFunc("PUT /v1/dev/alerts/{id}", s.putDevAlert)
+	mux.HandleFunc("DELETE /v1/dev/alerts/{id}", s.deleteDevAlert)
+	mux.HandleFunc("GET /v1/dev/usage", s.devUsage)
+	mux.HandleFunc("GET /v1/dev/sla", s.devSLA)
 	return s.middleware(mux)
 }
 
@@ -80,7 +109,7 @@ func (s *Server) middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if origin := s.Cfg.CORSOrigin; origin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-NetPulse-Session")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-NetPulse-Session, X-NetPulse-Key")
 			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 		}
 		if r.Method == http.MethodOptions {

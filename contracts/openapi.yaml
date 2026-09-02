@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: NetPulse API
-  version: 0.9.0
-  description: Versioned JSON contract for diagnoses, services, incidents, map aggregates, and the user platform. No invented health. Auth tokens are session ids, never localStorage.
+  version: 0.10.0
+  description: Versioned JSON contract for diagnoses, services, incidents, map aggregates, the user platform, and the developer workspace. No invented health. Auth tokens are session ids or hashed API keys, never localStorage.
 servers:
   - url: http://localhost:8080
 paths:
@@ -309,6 +309,82 @@ paths:
   /v1/shares/{token}:
     get:
       summary: Read a report through a share token
+  /v1/dev/workspace:
+    get:
+      summary: Current user's personal developer workspace
+  /v1/dev/workspaces/{id}:
+    get:
+      summary: Owner-only workspace. Foreign ids return 404.
+  /v1/dev/dashboard:
+    get:
+      summary: Stored-check dashboard. Empty series stay unmeasured.
+  /v1/dev/monitors:
+    get:
+      summary: List tenant monitors
+    post:
+      summary: Create an HTTP, DNS, or TLS monitor
+  /v1/dev/monitors/{id}:
+    get:
+      summary: Owner-only monitor. Foreign ids return 404.
+    patch:
+      summary: Update an owned monitor
+    delete:
+      summary: Delete an owned monitor
+  /v1/dev/monitors/{id}/run:
+    post:
+      summary: Run a worker vantage check and store the actual result
+  /v1/dev/incidents:
+    get:
+      summary: Tenant monitor incidents from stored checks
+  /v1/dev/incidents/{id}:
+    get:
+      responses:
+        "404":
+          description: Unknown or foreign incident
+  /v1/dev/keys:
+    get:
+      summary: List keys. Raw secrets are never included.
+    post:
+      summary: Create a key. Raw secret is returned once. Session only.
+  /v1/dev/keys/{id}/rotate:
+    post:
+      summary: Rotate an owned key. Session only.
+  /v1/dev/keys/{id}/revoke:
+    post:
+      summary: Revoke an owned key. Session only.
+  /v1/dev/webhooks:
+    get:
+      summary: List webhooks. Signing secrets are never included.
+    post:
+      summary: Create an HTTPS webhook. Local and private URLs are rejected.
+  /v1/dev/webhooks/{id}/rotate:
+    post:
+      summary: Rotate the signing secret
+  /v1/dev/webhooks/{id}:
+    delete:
+      summary: Delete an owned webhook
+  /v1/dev/webhooks/{id}/deliveries:
+    get:
+      summary: Stored deliveries with event id, timestamp, signature, retry, and idempotency
+  /v1/dev/webhooks/{id}/retry:
+    post:
+      summary: Retry deliveries that are still retryable
+  /v1/dev/alerts:
+    get:
+      summary: Alert rules. deliveredCount is stored, not invented.
+    post:
+      summary: Create an availability, latency, error, or incident rule
+  /v1/dev/alerts/{id}:
+    put:
+      summary: Update an owned alert rule
+    delete:
+      summary: Delete an owned alert rule
+  /v1/dev/usage:
+    get:
+      summary: Stored request, measurement, monitor, region, and webhook counts
+  /v1/dev/sla:
+    get:
+      summary: Stored-check SLA ratios. Percentiles require at least five latency samples.
 components:
   schemas:
     Error:

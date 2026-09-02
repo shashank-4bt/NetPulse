@@ -96,6 +96,24 @@ type Envelope = {
   privacy?: Record<string, unknown>;
   share?: Record<string, unknown>;
   sessionToken?: string;
+  workspace?: Record<string, unknown>;
+  monitors?: Record<string, unknown>[];
+  monitor?: Record<string, unknown>;
+  apiKeys?: Record<string, unknown>[];
+  apiKey?: Record<string, unknown>;
+  keySecret?: string;
+  webhooks?: Record<string, unknown>[];
+  webhook?: Record<string, unknown>;
+  webhookSecret?: string;
+  deliveries?: Record<string, unknown>[];
+  alertRules?: Record<string, unknown>[];
+  alertRule?: Record<string, unknown>;
+  usage?: Record<string, unknown>;
+  sla?: Record<string, unknown>;
+  developerDashboard?: Record<string, unknown>;
+  developerIncidents?: Record<string, unknown>[];
+  developerIncident?: Record<string, unknown>;
+  checks?: Record<string, unknown>[];
   error?: { code?: string; message?: string };
 };
 

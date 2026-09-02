@@ -1,15 +1,17 @@
 import Link from "next/link";
 
 import { ACCOUNT_NAV, DASHBOARD_NAV } from "@/domain/account";
+import { DEVELOPER_NAV } from "@/domain/developer";
 
 type SignedInNavProps = {
-  kind: "dashboard" | "account";
+  kind: "dashboard" | "account" | "developer";
 };
 
 export function SignedInNav({ kind }: SignedInNavProps) {
-  const items = kind === "dashboard" ? DASHBOARD_NAV : ACCOUNT_NAV;
+  const items = kind === "dashboard" ? DASHBOARD_NAV : kind === "account" ? ACCOUNT_NAV : DEVELOPER_NAV;
+  const label = kind === "dashboard" ? "Dashboard" : kind === "account" ? "Account" : "Developer workspace";
   return (
-    <nav aria-label={kind === "dashboard" ? "Dashboard" : "Account"} className="flex flex-wrap gap-2">
+    <nav aria-label={label} className="flex flex-wrap gap-2">
       {items.map((item) => (
         <Link
           key={item.href}

@@ -120,8 +120,8 @@ The product source of truth was provided in the engineering contract (chat). In-
 | ID | Sev | Item | Target stage |
 | --- | --- | --- | --- |
 | TD-004 | P1 | User-path isolation still cannot be inferred from worker vantage alone | later probes |
-| TD-008 | P2 | No CI | 10 |
-| TD-009 | P2 | No local Compose for Postgres/Redis | 10 |
+| TD-008 | P2 | No CI | 11 |
+| TD-009 | P2 | No local Compose for Postgres/Redis | 11 |
 | TD-010 | P2 | Product spec only in chat + Stage 01 docs | later docs |
 | TD-011 | P1 | Default stores are process-local memory adapters until DSN drivers are linked | persistent store |
 
@@ -186,6 +186,15 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Dashboard Internet Health is explanatory text, not a live score. Billing `hasAccount` is false. Alert `deliveredCount` stays at the stored value (0 until delivery exists).
 - OAuth, passkeys, and MFA return 501. Email is not sent; `NETPULSE_AUTH_DEV_TOKENS` may include a unused token for local tests only.
 - Signed-in diagnoses attach `userId`. Anonymous diagnoses remain UUID-accessible.
+
+## 15. Stage 10 notes
+
+- Developer resources belong to a lazily created personal workspace. Cross-tenant reads return 404.
+- API keys are stored as SHA-256 hashes. Webhook signing secrets stay server-side after create/rotate.
+- Webhook URLs must be HTTPS and pass the same SSRF host policy as diagnose targets.
+- Dashboard/SLA availability is a stored-check ratio. P50/P95/P99 stay null until five latency samples exist. No 99.9% copy.
+- Alert `deliveredCount` increments only when a threshold or incident event is recorded. Email is not sent.
+- Postgres tables exist in `schema/postgres.sql`. The runtime adapter remains an unlinked stub.
 
 ## 7. Stage 02 decisions
 

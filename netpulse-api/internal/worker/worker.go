@@ -18,11 +18,16 @@ type ProbeRunner interface {
 	Run(ctx context.Context, target validation.Target) ([]contract.Measurement, error)
 }
 
+type CompletionNotifier interface {
+	NotifyDiagnosisCompleted(ctx context.Context, userID, diagnosisID string)
+}
+
 type Worker struct {
 	Store        storage.DiagnoseStore
 	Measurements storage.MeasurementStore
 	Queue        storage.Queue
 	Runner       ProbeRunner
+	Completions  CompletionNotifier
 	Log          *slog.Logger
 	Concurrency  int
 }
@@ -100,6 +105,9 @@ func (w *Worker) process(ctx context.Context, job storage.Job) {
 	}
 	rec.Diagnosis.Report = &report
 	_ = w.Store.UpdateDiagnosis(ctx, *rec)
+	if rec.UserID != "" && w.Completions != nil {
+		w.Completions.NotifyDiagnosisCompleted(ctx, rec.UserID, rec.Diagnosis.ID)
+	}
 	if w.Log != nil {
 		w.Log.Info("diagnosis processed", "id", job.DiagnosisID, "status", rec.Diagnosis.Status)
 	}

@@ -1,9 +1,9 @@
 package contract
 
 const (
-	ModelVersion       = "0.9.0"
-	EngineVersion      = "0.9.0"
-	RuleVersion        = "0.9.0-user-platform"
+	ModelVersion       = "0.10.0"
+	EngineVersion      = "0.10.0"
+	RuleVersion        = "0.10.0-developer-platform"
 	MeasurementVersion = "0.6.0-dns-tcp-tls-http"
 	ObservedFailures   = "Elevated connectivity failures observed"
 	ConfidenceCaveat   = "Confidence is not certainty. A level or percentage can be wrong and must not be treated as proof."
@@ -174,9 +174,27 @@ type Envelope struct {
 	Alerts       *AlertPreferences    `json:"alerts,omitempty"`
 	Billing      *Billing             `json:"billing,omitempty"`
 	Privacy      *PrivacySettings     `json:"privacy,omitempty"`
-	Share        *ShareLink           `json:"share,omitempty"`
-	SessionToken string               `json:"sessionToken,omitempty"`
-	Error        *APIError            `json:"error,omitempty"`
+	Share          *ShareLink           `json:"share,omitempty"`
+	SessionToken   string               `json:"sessionToken,omitempty"`
+	Workspace      *Workspace           `json:"workspace,omitempty"`
+	Monitors       []Monitor            `json:"monitors,omitempty"`
+	Monitor        *Monitor             `json:"monitor,omitempty"`
+	APIKeys        []APIKey             `json:"apiKeys,omitempty"`
+	APIKey         *APIKey              `json:"apiKey,omitempty"`
+	KeySecret      string               `json:"keySecret,omitempty"`
+	Webhooks       []Webhook            `json:"webhooks,omitempty"`
+	Webhook        *Webhook             `json:"webhook,omitempty"`
+	WebhookSecret  string               `json:"webhookSecret,omitempty"`
+	Deliveries     []WebhookDelivery    `json:"deliveries,omitempty"`
+	AlertRules     []AlertRule          `json:"alertRules,omitempty"`
+	AlertRule      *AlertRule           `json:"alertRule,omitempty"`
+	Usage          *Usage               `json:"usage,omitempty"`
+	SLA            *SLAReport           `json:"sla,omitempty"`
+	DevDashboard   *DeveloperDashboard  `json:"developerDashboard,omitempty"`
+	DevIncidents   []DeveloperIncident  `json:"developerIncidents,omitempty"`
+	DevIncident    *DeveloperIncident   `json:"developerIncident,omitempty"`
+	Checks         []MonitorCheck       `json:"checks,omitempty"`
+	Error          *APIError            `json:"error,omitempty"`
 }
 
 type Service struct {
@@ -397,6 +415,185 @@ func DefaultPrivacy() PrivacySettings {
 		Deletion:       "You can delete the account. That removes the user, sessions, tokens, saved services, and owned diagnoses from this store.",
 		BrowsingHistory: "NetPulse does not collect a browsing history. Diagnosis uses only the target you submit.",
 	}
+}
+
+type Workspace struct {
+	ID        string `json:"id"`
+	OwnerID   string `json:"-"`
+	Name      string `json:"name"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type MonitorThresholds struct {
+	AvailabilityBelow *float64 `json:"availabilityBelow"`
+	LatencyMsAbove    *int     `json:"latencyMsAbove"`
+	ErrorRateAbove    *float64 `json:"errorRateAbove"`
+}
+
+type Monitor struct {
+	ID          string            `json:"id"`
+	WorkspaceID string            `json:"-"`
+	Name        string            `json:"name"`
+	Target      string            `json:"target"`
+	Type        string            `json:"type"`
+	Regions     []string          `json:"regions"`
+	FrequencyS  int               `json:"frequencySeconds"`
+	TimeoutS    int               `json:"timeoutSeconds"`
+	Thresholds  MonitorThresholds `json:"thresholds"`
+	Status      string            `json:"status"`
+	Summary     string            `json:"summary"`
+	CheckCount  int               `json:"checkCount"`
+	CreatedAt   string            `json:"createdAt"`
+	UpdatedAt   string            `json:"updatedAt"`
+}
+
+type MonitorCheck struct {
+	ID          string `json:"id"`
+	MonitorID   string `json:"monitorId"`
+	WorkspaceID string `json:"-"`
+	Region      string `json:"region"`
+	OK          bool   `json:"ok"`
+	LatencyMs   *int   `json:"latencyMs"`
+	At          string `json:"at"`
+	Summary     string `json:"summary"`
+}
+
+type APIKey struct {
+	ID             string   `json:"id"`
+	WorkspaceID    string   `json:"-"`
+	Name           string   `json:"name"`
+	Prefix         string   `json:"prefix"`
+	Last4          string   `json:"last4"`
+	Hash           string   `json:"-"`
+	Scopes         []string `json:"scopes"`
+	RateLimitPerMin int     `json:"rateLimitPerMin"`
+	Revoked        bool     `json:"revoked"`
+	CreatedAt      string   `json:"createdAt"`
+	LastUsedAt     *string  `json:"lastUsedAt"`
+}
+
+type Webhook struct {
+	ID          string   `json:"id"`
+	WorkspaceID string   `json:"-"`
+	URL         string   `json:"url"`
+	Events      []string `json:"events"`
+	Secret      string   `json:"-"`
+	SecretHint  string   `json:"secretHint"`
+	CreatedAt   string   `json:"createdAt"`
+	Disabled    bool     `json:"disabled"`
+}
+
+type WebhookDelivery struct {
+	ID             string  `json:"id"`
+	WebhookID      string  `json:"webhookId"`
+	WorkspaceID    string  `json:"-"`
+	Event          string  `json:"event"`
+	EventID        string  `json:"eventId"`
+	Timestamp      string  `json:"timestamp"`
+	IdempotencyKey string  `json:"idempotencyKey"`
+	Signature      string  `json:"signature"`
+	Payload        string  `json:"-"`
+	Attempt        int     `json:"attempt"`
+	Status         string  `json:"status"`
+	NextRetryAt    *string `json:"nextRetryAt"`
+	Summary        string  `json:"summary"`
+}
+
+type AlertRule struct {
+	ID             string  `json:"id"`
+	WorkspaceID    string  `json:"-"`
+	Kind           string  `json:"kind"`
+	MonitorID      *string `json:"monitorId"`
+	Threshold      float64 `json:"threshold"`
+	Enabled        bool    `json:"enabled"`
+	DeliveredCount int     `json:"deliveredCount"`
+	Summary        string  `json:"summary"`
+	CreatedAt      string  `json:"createdAt"`
+}
+
+type DeveloperIncident struct {
+	ID          string `json:"id"`
+	WorkspaceID string `json:"-"`
+	MonitorID   string `json:"monitorId"`
+	Title       string `json:"title"`
+	Status      string `json:"status"`
+	StartedAt   string `json:"startedAt"`
+	ResolvedAt  *string `json:"resolvedAt"`
+	SampleCount int    `json:"sampleCount"`
+	Summary     string `json:"summary"`
+}
+
+type Usage struct {
+	Requests     int    `json:"requests"`
+	Measurements int    `json:"measurements"`
+	Monitors     int    `json:"monitors"`
+	Regions      int    `json:"regions"`
+	Webhooks     int    `json:"webhooks"`
+	Summary      string `json:"summary"`
+}
+
+type PercentilePoint struct {
+	P50         *float64 `json:"p50"`
+	P95         *float64 `json:"p95"`
+	P99         *float64 `json:"p99"`
+	SampleCount int      `json:"sampleCount"`
+	Summary     string   `json:"summary"`
+}
+
+type RegionalSlice struct {
+	Region      string `json:"region"`
+	SampleCount int    `json:"sampleCount"`
+	Status      string `json:"status"`
+	Summary     string `json:"summary"`
+}
+
+type DeveloperDashboard struct {
+	Availability Observation      `json:"availability"`
+	Latency      PercentilePoint  `json:"latency"`
+	Incidents    []DeveloperIncident `json:"incidents"`
+	Regional     []RegionalSlice  `json:"regionalPerformance"`
+	Summary      string           `json:"summary"`
+}
+
+type SLAReport struct {
+	Availability Observation      `json:"availability"`
+	Downtime     Observation      `json:"downtime"`
+	Latency      PercentilePoint  `json:"latency"`
+	Incidents    []DeveloperIncident `json:"incidents"`
+	Regional     []RegionalSlice  `json:"regionalPerformance"`
+	Summary      string           `json:"summary"`
+}
+
+func EmptyPercentiles() PercentilePoint {
+	return PercentilePoint{
+		SampleCount: 0,
+		Summary:     "Observed sample count: 0. Percentiles are not estimated from an empty series.",
+	}
+}
+
+func EmptyDeveloperDashboard() DeveloperDashboard {
+	return DeveloperDashboard{
+		Availability: UnmeasuredObservation("Availability"),
+		Latency:      EmptyPercentiles(),
+		Incidents:    []DeveloperIncident{},
+		Regional:     []RegionalSlice{},
+		Summary:      "No monitor checks are stored. Availability and latency stay unmeasured.",
+	}
+}
+
+func EmptySLA() SLAReport {
+	return SLAReport{
+		Availability: UnmeasuredObservation("Availability"),
+		Downtime:     UnmeasuredObservation("Downtime"),
+		Latency:      EmptyPercentiles(),
+		Incidents:    []DeveloperIncident{},
+		Regional:     []RegionalSlice{},
+		Summary:      "No SLA window can be computed until monitor checks are stored.",
+	}
+}
+
+func EmptyUsage() Usage {
+	return Usage{Summary: "Usage counts are stored request totals, not estimated traffic."}
 }
 
 func EmptyAlerts() AlertPreferences {

@@ -104,3 +104,40 @@ type AccountStore interface {
 	ListSharesByUser(ctx context.Context, userID string) ([]ShareRecord, error)
 	DeleteSharesForDiagnosis(ctx context.Context, diagnosisID string) error
 }
+
+type DeveloperStore interface {
+	GetOrCreateWorkspace(ctx context.Context, ownerID, name string) (contract.Workspace, error)
+	GetWorkspace(ctx context.Context, id string) (*contract.Workspace, error)
+	GetWorkspaceByOwner(ctx context.Context, ownerID string) (*contract.Workspace, error)
+	CreateMonitor(ctx context.Context, item contract.Monitor) error
+	GetMonitor(ctx context.Context, id string) (*contract.Monitor, error)
+	ListMonitors(ctx context.Context, workspaceID string) ([]contract.Monitor, error)
+	UpdateMonitor(ctx context.Context, item contract.Monitor) error
+	DeleteMonitor(ctx context.Context, workspaceID, id string) (bool, error)
+	AddCheck(ctx context.Context, check contract.MonitorCheck) error
+	ListChecks(ctx context.Context, workspaceID, monitorID string) ([]contract.MonitorCheck, error)
+	CreateAPIKey(ctx context.Context, key contract.APIKey) error
+	GetAPIKey(ctx context.Context, id string) (*contract.APIKey, error)
+	GetAPIKeyByHash(ctx context.Context, hash string) (*contract.APIKey, error)
+	ListAPIKeys(ctx context.Context, workspaceID string) ([]contract.APIKey, error)
+	UpdateAPIKey(ctx context.Context, key contract.APIKey) error
+	CreateWebhook(ctx context.Context, hook contract.Webhook) error
+	GetWebhook(ctx context.Context, id string) (*contract.Webhook, error)
+	ListWebhooks(ctx context.Context, workspaceID string) ([]contract.Webhook, error)
+	UpdateWebhook(ctx context.Context, hook contract.Webhook) error
+	DeleteWebhook(ctx context.Context, workspaceID, id string) (bool, error)
+	CreateDelivery(ctx context.Context, item contract.WebhookDelivery) error
+	GetDeliveryByIdempotency(ctx context.Context, key string) (*contract.WebhookDelivery, error)
+	ListDeliveries(ctx context.Context, workspaceID, webhookID string) ([]contract.WebhookDelivery, error)
+	UpdateDelivery(ctx context.Context, item contract.WebhookDelivery) error
+	CreateAlertRule(ctx context.Context, rule contract.AlertRule) error
+	ListAlertRules(ctx context.Context, workspaceID string) ([]contract.AlertRule, error)
+	UpdateAlertRule(ctx context.Context, rule contract.AlertRule) error
+	DeleteAlertRule(ctx context.Context, workspaceID, id string) (bool, error)
+	CreateDevIncident(ctx context.Context, item contract.DeveloperIncident) error
+	ListDevIncidents(ctx context.Context, workspaceID string) ([]contract.DeveloperIncident, error)
+	GetDevIncident(ctx context.Context, id string) (*contract.DeveloperIncident, error)
+	UpdateDevIncident(ctx context.Context, item contract.DeveloperIncident) error
+	IncrUsage(ctx context.Context, workspaceID, field string, delta int) error
+	GetUsage(ctx context.Context, workspaceID string) (contract.Usage, error)
+}

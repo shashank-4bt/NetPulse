@@ -30,7 +30,7 @@ func FromEnv() Config {
 		DatabaseURL:       os.Getenv("NETPULSE_DATABASE_URL"),
 		RedisURL:          os.Getenv("NETPULSE_REDIS_URL"),
 		ClickHouseURL:     os.Getenv("NETPULSE_CLICKHOUSE_URL"),
-		EngineVersion:     "0.9.0",
+		EngineVersion:     "0.10.0",
 		AuthDevTokens:     envBool("NETPULSE_AUTH_DEV_TOKENS", false),
 		SessionTTLHours:   envInt("NETPULSE_SESSION_TTL_HOURS", 168),
 	}

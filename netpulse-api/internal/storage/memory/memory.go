@@ -24,7 +24,19 @@ type Store struct {
 	tokens        map[string]storage.TokenRecord
 	events       []contract.SecurityEvent
 	saved        map[string][]contract.SavedService
-	shares       map[string]storage.ShareRecord
+	shares        map[string]storage.ShareRecord
+	workspaces    map[string]contract.Workspace
+	workspaceOwner map[string]string
+	monitors      map[string]contract.Monitor
+	checks        []contract.MonitorCheck
+	apiKeys       map[string]contract.APIKey
+	apiKeyHash    map[string]string
+	webhooks      map[string]contract.Webhook
+	deliveries    map[string]contract.WebhookDelivery
+	deliveryIdem  map[string]string
+	alertRules    map[string]contract.AlertRule
+	devIncidents  map[string]contract.DeveloperIncident
+	usage         map[string]contract.Usage
 }
 
 type cacheItem struct {
@@ -47,7 +59,19 @@ func New() *Store {
 		tokens:        map[string]storage.TokenRecord{},
 		events:       []contract.SecurityEvent{},
 		saved:        map[string][]contract.SavedService{},
-		shares:       map[string]storage.ShareRecord{},
+		shares:         map[string]storage.ShareRecord{},
+		workspaces:     map[string]contract.Workspace{},
+		workspaceOwner: map[string]string{},
+		monitors:       map[string]contract.Monitor{},
+		checks:         []contract.MonitorCheck{},
+		apiKeys:        map[string]contract.APIKey{},
+		apiKeyHash:     map[string]string{},
+		webhooks:       map[string]contract.Webhook{},
+		deliveries:     map[string]contract.WebhookDelivery{},
+		deliveryIdem:   map[string]string{},
+		alertRules:     map[string]contract.AlertRule{},
+		devIncidents:   map[string]contract.DeveloperIncident{},
+		usage:          map[string]contract.Usage{},
 	}
 }
 

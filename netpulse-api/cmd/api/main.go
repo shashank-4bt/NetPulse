@@ -12,8 +12,10 @@ import (
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/accounts"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/api"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/developer"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/diagnostics"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/logging"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/measurements"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage/clickhouse"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage/memory"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage/postgres"
@@ -54,6 +56,10 @@ func main() {
 		DevTokens:  cfg.AuthDevTokens,
 		SessionTTL: time.Duration(cfg.SessionTTLHours) * time.Hour,
 	}
+	developerSvc := &developer.Service{
+		Store:  store,
+		Runner: measurements.NewRunner(),
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -63,6 +69,7 @@ func main() {
 			Measurements: store,
 			Queue:        store,
 			Runner:       worker.DefaultRunner(),
+			Completions:  developerSvc,
 			Log:          log,
 			Concurrency:  cfg.WorkerConcurrency,
 		}
@@ -75,6 +82,7 @@ func main() {
 		Log:         log,
 		Diagnostics: svc,
 		Accounts:    accountSvc,
+		Developer:   developerSvc,
 		Limiter:     store,
 		StorageInfo: storageInfo,
 	}
