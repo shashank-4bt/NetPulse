@@ -48,6 +48,7 @@ func (s *Server) requireDev(w http.ResponseWriter, r *http.Request, scope string
 		limit = 60
 	}
 	if s.Limiter != nil && !s.Limiter.Allow("key:"+key.ID, limit) {
+		s.recordAbuse(r, "api_abuse", "key:"+key.ID, "dev", "blocked", "API key rate limit exceeded.")
 		write(w, http.StatusTooManyRequests, contract.Envelope{Error: &contract.APIError{Code: "rate_limited", Message: "API key rate limit exceeded."}})
 		return nil
 	}
@@ -318,6 +319,9 @@ func (s *Server) createDevWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 	item, secret, errResp, status := s.Developer.CreateWebhook(r.Context(), actor.Workspace.ID, developer.WebhookInput{URL: body.URL, Events: body.Events})
 	if errResp != nil {
+		if errResp.Code == "ssrf_blocked" {
+			s.recordAbuse(r, "ssrf", actor.Workspace.ID, "webhooks", "blocked", "Webhook URL was blocked by SSRF policy.")
+		}
 		write(w, status, contract.Envelope{Error: errResp})
 		return
 	}

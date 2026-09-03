@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: NetPulse API
-  version: 0.11.0
-  description: Versioned JSON contract for diagnoses, services, incidents, map aggregates, the user platform, the developer workspace, and organizations. No invented health. Auth tokens are session ids or hashed API keys, never localStorage.
+  version: 0.12.0
+  description: Versioned JSON contract for diagnoses, services, incidents, map aggregates, the user platform, the developer workspace, organizations, and the internal admin platform. No invented health. Auth tokens are session ids or hashed API keys, never localStorage.
 servers:
   - url: http://localhost:8080
 paths:
@@ -498,6 +498,88 @@ paths:
   /v1/orgs/{orgId}/audit:
     get:
       summary: Stored audit events. Requires audit.read.
+  /v1/admin/me:
+    get:
+      summary: Operator identity. Signed-in non-operators receive 404.
+      responses:
+        "200":
+          description: Operator
+        "401":
+          description: Unauthenticated
+        "404":
+          description: Not found
+  /v1/admin/system:
+    get:
+      summary: Process, worker heartbeat, queue depth, backend names, and stored measurement figures. Empty series stay unmeasured.
+  /v1/admin/users:
+    get:
+      summary: Account records without password hashes or session secrets.
+  /v1/admin/users/{id}:
+    get:
+      summary: One account record.
+  /v1/admin/organizations:
+    get:
+      summary: Stored organizations.
+  /v1/admin/organizations/{id}:
+    get:
+      summary: One stored organization.
+  /v1/admin/services:
+    get:
+      summary: Editorial catalog.
+  /v1/admin/incidents:
+    get:
+      summary: Stored public incidents plus operator notes and overrides.
+  /v1/admin/incidents/{id}:
+    get:
+      summary: One stored incident with notes.
+  /v1/admin/incidents/{id}/annotate:
+    post:
+      summary: Store an operator note. Audited.
+  /v1/admin/incidents/{id}/investigate:
+    post:
+      summary: Mark investigating and store a note. Audited.
+  /v1/admin/incidents/{id}/escalate:
+    post:
+      summary: Raise stored severity. Audited.
+  /v1/admin/incidents/{id}/resolve:
+    post:
+      summary: Resolve when recovery evidence exists, or with an audited override.
+  /v1/admin/incidents/{id}/override:
+    post:
+      summary: Override automated classification. Always audited.
+  /v1/admin/measurements:
+    get:
+      summary: Stored worker measurements.
+  /v1/admin/diagnostics:
+    get:
+      summary: Stored diagnoses. Share tokens are not included.
+  /v1/admin/rules:
+    get:
+      summary: Rule catalog, versions, thresholds, and labeled false positives/negatives.
+  /v1/admin/rules/labels:
+    post:
+      summary: Store a false-positive or false-negative label for a diagnosis.
+  /v1/admin/abuse:
+    get:
+      summary: Stored rate-limit, SSRF, and API abuse events.
+  /v1/admin/audit:
+    get:
+      summary: Operator audit log with actor, action, resource, timestamp, and result.
+  /v1/admin/flags:
+    get:
+      summary: Stored feature flags. Rollout counts are not estimated.
+    post:
+      summary: Create a flag with environment, percentage, user, and organization targeting.
+  /v1/admin/flags/{id}:
+    get:
+      summary: Read a flag. Query environment, userId, and orgId to evaluate targeting.
+    patch:
+      summary: Update a stored flag.
+  /v1/admin/config:
+    get:
+      summary: Remote configuration for timeouts, thresholds, limits, and feature settings.
+    put:
+      summary: Update a known configuration key. Secrets are rejected.
 components:
   schemas:
     Error:

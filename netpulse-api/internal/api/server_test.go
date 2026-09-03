@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/accounts"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/admin"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/api"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/business"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
@@ -40,12 +41,20 @@ func setup(t *testing.T) (*httptest.Server, *memory.Store, *worker.Worker) {
 			ID: "measurement-dns", Key: "dns", Label: "DNS", Value: "1", Measured: true,
 		}},
 	}}
+	cfg := config.Config{CORSOrigin: "http://localhost:3000", RateLimitPerMin: 40, EngineVersion: "0.12.0", AuthDevTokens: true, SessionTTLHours: 168, Environment: "test"}
+	adminSvc := &admin.Service{
+		Store: store, Diagnoses: store, Queue: store, Cfg: cfg,
+		StorageInfo: map[string]string{"postgres": "memory", "clickhouse": "memory", "redis": "memory"},
+		Worker:      w,
+	}
+	adminSvc.Seed(context.Background())
 	server := &api.Server{
-		Cfg:         config.Config{CORSOrigin: "http://localhost:3000", RateLimitPerMin: 40, EngineVersion: "0.11.0", AuthDevTokens: true, SessionTTLHours: 168},
+		Cfg:         cfg,
 		Diagnostics: svc,
 		Accounts:    &accounts.Service{Accounts: store, Diagnoses: store, DevTokens: true, SessionTTL: 7 * 24 * time.Hour},
 		Developer:   &developer.Service{Store: store},
 		Business:    &business.Service{Store: store, Accounts: store, Diagnoses: svc},
+		Admin:       adminSvc,
 		Limiter:     store,
 		StorageInfo: map[string]string{"postgres": "memory", "clickhouse": "memory", "redis": "memory"},
 	}

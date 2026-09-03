@@ -25,6 +25,7 @@ func (s *Store) Enqueue(context.Context, storage.Job) error { return ErrNotConfi
 func (s *Store) Dequeue(context.Context) (storage.Job, bool) {
 	return storage.Job{}, false
 }
+func (s *Store) Depth() int                        { return 0 }
 func (s *Store) Allow(string, int) bool            { return false }
 func (s *Store) Get(string) (string, bool)         { return "", false }
 func (s *Store) Set(string, string, time.Duration) {}

@@ -10,48 +10,56 @@ import (
 )
 
 type Store struct {
-	mu           sync.Mutex
-	diagnoses    map[string]storage.DiagnosisRecord
-	incidents    []contract.Incident
-	queue        []storage.Job
-	rate         map[string][]time.Time
-	cache        map[string]cacheItem
-	measurements map[string][]contract.Measurement
-	users        map[string]storage.UserRecord
-	emailIndex   map[string]string
-	sessions      map[string]contract.Session
-	sessionByHash map[string]string
-	tokens        map[string]storage.TokenRecord
-	events       []contract.SecurityEvent
-	saved        map[string][]contract.SavedService
-	shares        map[string]storage.ShareRecord
-	workspaces    map[string]contract.Workspace
+	mu             sync.Mutex
+	diagnoses      map[string]storage.DiagnosisRecord
+	incidents      []contract.Incident
+	queue          []storage.Job
+	rate           map[string][]time.Time
+	cache          map[string]cacheItem
+	measurements   map[string][]contract.Measurement
+	users          map[string]storage.UserRecord
+	emailIndex     map[string]string
+	sessions       map[string]contract.Session
+	sessionByHash  map[string]string
+	tokens         map[string]storage.TokenRecord
+	events         []contract.SecurityEvent
+	saved          map[string][]contract.SavedService
+	shares         map[string]storage.ShareRecord
+	workspaces     map[string]contract.Workspace
 	workspaceOwner map[string]string
-	monitors      map[string]contract.Monitor
-	checks        []contract.MonitorCheck
-	apiKeys       map[string]contract.APIKey
-	apiKeyHash    map[string]string
-	webhooks      map[string]contract.Webhook
-	deliveries    map[string]contract.WebhookDelivery
-	deliveryIdem  map[string]string
-	alertRules    map[string]contract.AlertRule
-	devIncidents  map[string]contract.DeveloperIncident
-	usage         map[string]contract.Usage
-	orgs          map[string]contract.Organization
-	members       map[string]contract.Member
-	invites       map[string]contract.OrgInvite
-	teams         map[string]contract.Team
-	orgDevices    map[string]contract.OrgDevice
-	orgNetworks   map[string]contract.OrgNetwork
-	orgServices   map[string]contract.OrgService
-	orgMonitors   map[string]contract.Monitor
-	orgChecks     []contract.MonitorCheck
-	orgIncidents  map[string]contract.OrgIncident
-	orgDiagnoses  map[string]contract.OrgDiagnosis
-	orgReports    map[string]contract.OrgReport
-	orgKeys       map[string]contract.APIKey
-	orgKeyHash    map[string]string
-	audit         []contract.AuditEvent
+	monitors       map[string]contract.Monitor
+	checks         []contract.MonitorCheck
+	apiKeys        map[string]contract.APIKey
+	apiKeyHash     map[string]string
+	webhooks       map[string]contract.Webhook
+	deliveries     map[string]contract.WebhookDelivery
+	deliveryIdem   map[string]string
+	alertRules     map[string]contract.AlertRule
+	devIncidents   map[string]contract.DeveloperIncident
+	usage          map[string]contract.Usage
+	orgs           map[string]contract.Organization
+	members        map[string]contract.Member
+	invites        map[string]contract.OrgInvite
+	teams          map[string]contract.Team
+	orgDevices     map[string]contract.OrgDevice
+	orgNetworks    map[string]contract.OrgNetwork
+	orgServices    map[string]contract.OrgService
+	orgMonitors    map[string]contract.Monitor
+	orgChecks      []contract.MonitorCheck
+	orgIncidents   map[string]contract.OrgIncident
+	orgDiagnoses   map[string]contract.OrgDiagnosis
+	orgReports     map[string]contract.OrgReport
+	orgKeys        map[string]contract.APIKey
+	orgKeyHash     map[string]string
+	audit          []contract.AuditEvent
+	operators      map[string]contract.Operator
+	adminAudit     []contract.AdminAudit
+	abuse          []contract.AbuseEvent
+	flags          map[string]contract.FeatureFlag
+	remoteConfig   map[string]contract.RemoteConfigEntry
+	incidentNotes  []contract.IncidentNote
+	overrides      map[string]contract.IncidentOverride
+	ruleLabels     []contract.RuleLabel
 }
 
 type cacheItem struct {
@@ -61,19 +69,19 @@ type cacheItem struct {
 
 func New() *Store {
 	return &Store{
-		diagnoses:    map[string]storage.DiagnosisRecord{},
-		incidents:    []contract.Incident{},
-		queue:        []storage.Job{},
-		rate:         map[string][]time.Time{},
-		cache:        map[string]cacheItem{},
-		measurements: map[string][]contract.Measurement{},
-		users:        map[string]storage.UserRecord{},
-		emailIndex:   map[string]string{},
-		sessions:      map[string]contract.Session{},
-		sessionByHash: map[string]string{},
-		tokens:        map[string]storage.TokenRecord{},
-		events:       []contract.SecurityEvent{},
-		saved:        map[string][]contract.SavedService{},
+		diagnoses:      map[string]storage.DiagnosisRecord{},
+		incidents:      []contract.Incident{},
+		queue:          []storage.Job{},
+		rate:           map[string][]time.Time{},
+		cache:          map[string]cacheItem{},
+		measurements:   map[string][]contract.Measurement{},
+		users:          map[string]storage.UserRecord{},
+		emailIndex:     map[string]string{},
+		sessions:       map[string]contract.Session{},
+		sessionByHash:  map[string]string{},
+		tokens:         map[string]storage.TokenRecord{},
+		events:         []contract.SecurityEvent{},
+		saved:          map[string][]contract.SavedService{},
 		shares:         map[string]storage.ShareRecord{},
 		workspaces:     map[string]contract.Workspace{},
 		workspaceOwner: map[string]string{},
@@ -102,6 +110,14 @@ func New() *Store {
 		orgKeys:        map[string]contract.APIKey{},
 		orgKeyHash:     map[string]string{},
 		audit:          []contract.AuditEvent{},
+		operators:      map[string]contract.Operator{},
+		adminAudit:     []contract.AdminAudit{},
+		abuse:          []contract.AbuseEvent{},
+		flags:          map[string]contract.FeatureFlag{},
+		remoteConfig:   map[string]contract.RemoteConfigEntry{},
+		incidentNotes:  []contract.IncidentNote{},
+		overrides:      map[string]contract.IncidentOverride{},
+		ruleLabels:     []contract.RuleLabel{},
 	}
 }
 
@@ -215,6 +231,12 @@ func (s *Store) Dequeue(_ context.Context) (storage.Job, bool) {
 	job := s.queue[0]
 	s.queue = s.queue[1:]
 	return job, true
+}
+
+func (s *Store) Depth() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return len(s.queue)
 }
 
 func (s *Store) Allow(key string, limitPerMin int) bool {

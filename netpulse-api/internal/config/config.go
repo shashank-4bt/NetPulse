@@ -18,6 +18,8 @@ type Config struct {
 	EngineVersion     string
 	AuthDevTokens     bool
 	SessionTTLHours   int
+	AdminEmails       []string
+	Environment       string
 }
 
 func FromEnv() Config {
@@ -30,10 +32,26 @@ func FromEnv() Config {
 		DatabaseURL:       os.Getenv("NETPULSE_DATABASE_URL"),
 		RedisURL:          os.Getenv("NETPULSE_REDIS_URL"),
 		ClickHouseURL:     os.Getenv("NETPULSE_CLICKHOUSE_URL"),
-		EngineVersion:     "0.11.0",
+		EngineVersion:     "0.12.0",
 		AuthDevTokens:     envBool("NETPULSE_AUTH_DEV_TOKENS", false),
 		SessionTTLHours:   envInt("NETPULSE_SESSION_TTL_HOURS", 168),
+		AdminEmails:       envList("NETPULSE_ADMIN_EMAILS"),
+		Environment:       env("NETPULSE_ENVIRONMENT", "development"),
 	}
+}
+
+func envList(key string) []string {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return []string{}
+	}
+	out := []string{}
+	for _, part := range strings.Split(raw, ",") {
+		if email := strings.ToLower(strings.TrimSpace(part)); email != "" {
+			out = append(out, email)
+		}
+	}
+	return out
 }
 
 func env(key, fallback string) string {

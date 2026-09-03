@@ -8,7 +8,7 @@ type PathParams = { path?: string[] };
 
 export async function proxyAccount(
   request: Request,
-  prefix: "auth" | "me" | "dev" | "orgs",
+  prefix: "auth" | "me" | "dev" | "orgs" | "admin",
   params: PathParams
 ): Promise<NextResponse> {
   if (!csrfAllowed(request)) {

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/accounts"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/admin"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/api"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/business"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
@@ -17,6 +18,7 @@ import (
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/diagnostics"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/logging"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/measurements"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/opsconfig"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage/clickhouse"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage/memory"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/storage/postgres"
@@ -66,10 +68,20 @@ func main() {
 		Accounts:  store,
 		Diagnoses: svc,
 	}
+	adminSvc := &admin.Service{
+		Store:       store,
+		Diagnoses:   store,
+		Queue:       store,
+		Cfg:         cfg,
+		StorageInfo: storageInfo,
+	}
+	adminSvc.Seed(context.Background())
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	if cfg.WorkerEmbedded {
+		concurrency := adminSvc.ConfigInt(context.Background(), opsconfig.WorkerConcurrency, cfg.WorkerConcurrency)
+		timeout := time.Duration(adminSvc.ConfigInt(context.Background(), opsconfig.DiagnoseTimeoutSeconds, 20)) * time.Second
 		w := &worker.Worker{
 			Store:        store,
 			Measurements: store,
@@ -77,10 +89,12 @@ func main() {
 			Runner:       worker.DefaultRunner(),
 			Completions:  developerSvc,
 			Log:          log,
-			Concurrency:  cfg.WorkerConcurrency,
+			Concurrency:  concurrency,
+			Timeout:      timeout,
 		}
 		w.Start(ctx)
-		log.Info("embedded worker started", "concurrency", cfg.WorkerConcurrency)
+		adminSvc.Worker = w
+		log.Info("embedded worker started", "concurrency", concurrency)
 	}
 
 	server := &api.Server{
@@ -90,6 +104,7 @@ func main() {
 		Accounts:    accountSvc,
 		Developer:   developerSvc,
 		Business:    businessSvc,
+		Admin:       adminSvc,
 		Limiter:     store,
 		StorageInfo: storageInfo,
 	}

@@ -41,6 +41,7 @@ type MeasurementStore interface {
 type Queue interface {
 	Enqueue(ctx context.Context, job Job) error
 	Dequeue(ctx context.Context) (Job, bool)
+	Depth() int
 	Backend() string
 }
 
@@ -201,4 +202,32 @@ type BusinessStore interface {
 	UpdateOrgKey(ctx context.Context, key contract.APIKey) error
 	AddAudit(ctx context.Context, event contract.AuditEvent) error
 	ListAudit(ctx context.Context, orgID string) ([]contract.AuditEvent, error)
+}
+
+type AdminStore interface {
+	GetOperator(ctx context.Context, userID string) (*contract.Operator, error)
+	UpsertOperator(ctx context.Context, op contract.Operator) error
+	ListUsers(ctx context.Context) ([]contract.AdminUser, error)
+	GetAdminUser(ctx context.Context, id string) (*contract.AdminUser, error)
+	ListAllOrgs(ctx context.Context) ([]contract.Organization, error)
+	ListAllDiagnoses(ctx context.Context) ([]DiagnosisRecord, error)
+	ListAllMeasurements(ctx context.Context) ([]contract.AdminMeasurement, error)
+	ListAllChecks(ctx context.Context) ([]contract.MonitorCheck, error)
+	UpdateIncident(ctx context.Context, item contract.Incident) error
+	AddIncidentNote(ctx context.Context, note contract.IncidentNote) error
+	ListIncidentNotes(ctx context.Context, incidentID string) ([]contract.IncidentNote, error)
+	SetIncidentOverride(ctx context.Context, incidentID string, ov contract.IncidentOverride) error
+	GetIncidentOverride(ctx context.Context, incidentID string) (*contract.IncidentOverride, error)
+	AddAbuse(ctx context.Context, ev contract.AbuseEvent) error
+	ListAbuse(ctx context.Context) ([]contract.AbuseEvent, error)
+	AddAdminAudit(ctx context.Context, ev contract.AdminAudit) error
+	ListAdminAudit(ctx context.Context) ([]contract.AdminAudit, error)
+	ListFlags(ctx context.Context) ([]contract.FeatureFlag, error)
+	GetFlag(ctx context.Context, id string) (*contract.FeatureFlag, error)
+	UpsertFlag(ctx context.Context, flag contract.FeatureFlag) error
+	ListRemoteConfig(ctx context.Context) ([]contract.RemoteConfigEntry, error)
+	GetRemoteConfig(ctx context.Context, key string) (*contract.RemoteConfigEntry, error)
+	UpsertRemoteConfig(ctx context.Context, entry contract.RemoteConfigEntry) error
+	AddRuleLabel(ctx context.Context, label contract.RuleLabel) error
+	ListRuleLabels(ctx context.Context) ([]contract.RuleLabel, error)
 }

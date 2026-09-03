@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/contract"
@@ -30,9 +31,46 @@ type Worker struct {
 	Completions  CompletionNotifier
 	Log          *slog.Logger
 	Concurrency  int
+	Timeout      time.Duration
+	mu           sync.Mutex
+	running      bool
+	processed    int
+	lastBeat     time.Time
+}
+
+type Snapshot struct {
+	Running       bool
+	LastHeartbeat *string
+	Processed     int
+	Concurrency   int
+}
+
+func (w *Worker) Snapshot() Snapshot {
+	if w == nil {
+		return Snapshot{}
+	}
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	out := Snapshot{Running: w.running, Processed: w.processed, Concurrency: w.Concurrency}
+	if !w.lastBeat.IsZero() {
+		stamp := w.lastBeat.UTC().Format(time.RFC3339)
+		out.LastHeartbeat = &stamp
+	}
+	return out
+}
+
+func (w *Worker) note() {
+	w.mu.Lock()
+	w.lastBeat = time.Now()
+	w.processed++
+	w.mu.Unlock()
 }
 
 func (w *Worker) Start(ctx context.Context) {
+	w.mu.Lock()
+	w.running = true
+	w.lastBeat = time.Now()
+	w.mu.Unlock()
 	n := w.Concurrency
 	if n < 1 {
 		n = 1
@@ -74,7 +112,11 @@ func (w *Worker) process(ctx context.Context, job storage.Job) {
 	target := validation.Target{
 		Raw: job.Target.Raw, Hostname: job.Target.Hostname, Kind: job.Target.Kind, ServiceSlug: job.Target.ServiceSlug,
 	}
-	probeCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
+	timeout := w.Timeout
+	if timeout <= 0 {
+		timeout = 20 * time.Second
+	}
+	probeCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	results, runErr := w.Runner.Run(probeCtx, target)
@@ -83,6 +125,7 @@ func (w *Worker) process(ctx context.Context, job storage.Job) {
 		rec.Diagnosis.Error = &contract.APIError{Code: "ssrf_blocked", Message: runErr.Error()}
 		rec.Diagnosis.Report = nil
 		_ = w.Store.UpdateDiagnosis(ctx, *rec)
+		w.note()
 		return
 	}
 
@@ -108,6 +151,7 @@ func (w *Worker) process(ctx context.Context, job storage.Job) {
 	if rec.UserID != "" && w.Completions != nil {
 		w.Completions.NotifyDiagnosisCompleted(ctx, rec.UserID, rec.Diagnosis.ID)
 	}
+	w.note()
 	if w.Log != nil {
 		w.Log.Info("diagnosis processed", "id", job.DiagnosisID, "status", rec.Diagnosis.Status)
 	}

@@ -136,6 +136,21 @@ type Envelope = {
   invites?: Record<string, unknown>[];
   orgDiagnoses?: Record<string, unknown>[];
   permissions?: string[];
+  operator?: Record<string, unknown>;
+  adminSystem?: Record<string, unknown>;
+  adminUsers?: Record<string, unknown>[];
+  adminUser?: Record<string, unknown>;
+  adminMeasurements?: Record<string, unknown>[];
+  adminDiagnoses?: Record<string, unknown>[];
+  adminRules?: Record<string, unknown>[];
+  ruleOutcomes?: Record<string, unknown>;
+  abuseEvents?: Record<string, unknown>[];
+  adminAudit?: Record<string, unknown>[];
+  featureFlags?: Record<string, unknown>[];
+  featureFlag?: Record<string, unknown>;
+  remoteConfig?: Record<string, unknown>[];
+  adminIncidents?: Record<string, unknown>[];
+  adminIncident?: Record<string, unknown>;
   error?: { code?: string; message?: string };
 };
 

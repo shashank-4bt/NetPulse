@@ -220,6 +220,7 @@ func (s *Server) allowAuth(w http.ResponseWriter, r *http.Request) bool {
 	}
 	ip := ClientIP(r)
 	if s.Limiter != nil && !s.Limiter.Allow("auth:"+ip, s.Cfg.RateLimitPerMin) {
+		s.recordAbuse(r, "rate_limit", ip, "auth", "blocked", "Authentication rate limit exceeded.")
 		write(w, http.StatusTooManyRequests, contract.Envelope{Error: &contract.APIError{Code: "rate_limited", Message: "Too many authentication requests"}})
 		return false
 	}

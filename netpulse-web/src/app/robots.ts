@@ -30,6 +30,7 @@ export default function robots(): MetadataRoute.Robots {
         "/business/reports",
         "/business/team",
         "/business/settings",
+        "/admin",
       ],
     },
     sitemap: new URL("/sitemap.xml", base).toString(),

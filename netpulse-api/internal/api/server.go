@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/accounts"
+	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/admin"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/business"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/config"
 	"github.com/shashank-4bt/NetPulse/netpulse-api/internal/contract"
@@ -26,6 +27,7 @@ type Server struct {
 	Accounts    *accounts.Service
 	Developer   *developer.Service
 	Business    *business.Service
+	Admin       *admin.Service
 	Limiter     storage.RateLimiter
 	StorageInfo map[string]string
 }
@@ -146,6 +148,32 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /v1/orgs/{orgId}/keys/{id}/revoke", s.revokeOrgKey)
 	mux.HandleFunc("GET /v1/orgs/{orgId}/billing", s.orgBilling)
 	mux.HandleFunc("GET /v1/orgs/{orgId}/audit", s.orgAudit)
+	mux.HandleFunc("GET /v1/admin/me", s.adminMe)
+	mux.HandleFunc("GET /v1/admin/system", s.adminSystem)
+	mux.HandleFunc("GET /v1/admin/users", s.adminUsers)
+	mux.HandleFunc("GET /v1/admin/users/{id}", s.adminUser)
+	mux.HandleFunc("GET /v1/admin/organizations", s.adminOrgs)
+	mux.HandleFunc("GET /v1/admin/organizations/{id}", s.adminOrg)
+	mux.HandleFunc("GET /v1/admin/services", s.adminServices)
+	mux.HandleFunc("GET /v1/admin/incidents", s.adminIncidents)
+	mux.HandleFunc("GET /v1/admin/incidents/{id}", s.adminIncident)
+	mux.HandleFunc("POST /v1/admin/incidents/{id}/annotate", s.adminIncidentAnnotate)
+	mux.HandleFunc("POST /v1/admin/incidents/{id}/investigate", s.adminIncidentInvestigate)
+	mux.HandleFunc("POST /v1/admin/incidents/{id}/escalate", s.adminIncidentEscalate)
+	mux.HandleFunc("POST /v1/admin/incidents/{id}/resolve", s.adminIncidentResolve)
+	mux.HandleFunc("POST /v1/admin/incidents/{id}/override", s.adminIncidentOverride)
+	mux.HandleFunc("GET /v1/admin/measurements", s.adminMeasurements)
+	mux.HandleFunc("GET /v1/admin/diagnostics", s.adminDiagnostics)
+	mux.HandleFunc("GET /v1/admin/rules", s.adminRules)
+	mux.HandleFunc("POST /v1/admin/rules/labels", s.adminRuleLabel)
+	mux.HandleFunc("GET /v1/admin/abuse", s.adminAbuse)
+	mux.HandleFunc("GET /v1/admin/audit", s.adminAudit)
+	mux.HandleFunc("GET /v1/admin/flags", s.adminFlags)
+	mux.HandleFunc("POST /v1/admin/flags", s.adminCreateFlag)
+	mux.HandleFunc("GET /v1/admin/flags/{id}", s.adminGetFlag)
+	mux.HandleFunc("PATCH /v1/admin/flags/{id}", s.adminPatchFlag)
+	mux.HandleFunc("GET /v1/admin/config", s.adminConfig)
+	mux.HandleFunc("PUT /v1/admin/config", s.adminPutConfig)
 	return s.middleware(mux)
 }
 
@@ -181,7 +209,8 @@ func (s *Server) createDiagnosis(w http.ResponseWriter, r *http.Request) {
 	if ip == "" {
 		ip = r.RemoteAddr
 	}
-	if s.Limiter != nil && !s.Limiter.Allow("diag:"+ip, s.Cfg.RateLimitPerMin) {
+	if s.Limiter != nil && !s.Limiter.Allow("diag:"+ip, s.diagnoseLimit(r)) {
+		s.recordAbuse(r, "rate_limit", ip, "diagnoses", "blocked", "Diagnose rate limit exceeded.")
 		write(w, http.StatusTooManyRequests, contract.Envelope{Error: &contract.APIError{Code: "rate_limited", Message: "Too many diagnose requests"}})
 		return
 	}
@@ -201,6 +230,9 @@ func (s *Server) createDiagnosis(w http.ResponseWriter, r *http.Request) {
 	}
 	diag, apiErr, status := s.Diagnostics.Create(r.Context(), body.Target, userID)
 	if apiErr != nil {
+		if apiErr.Code == "ssrf_blocked" {
+			s.recordAbuse(r, "ssrf", userID, "diagnoses", "blocked", "Diagnose target was blocked by SSRF policy.")
+		}
 		write(w, status, contract.Envelope{Error: apiErr})
 		return
 	}

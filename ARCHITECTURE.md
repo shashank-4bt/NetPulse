@@ -322,7 +322,7 @@ Target (when auth is implemented):
 - Session cookies: `HttpOnly`, `Secure`, `SameSite=Lax` or `Strict` as appropriate.
 - CSRF protection for cookie-authenticated mutations.
 - Server-side session lookup; revoke on logout.
-- RBAC later: `anonymous` (public diagnose if offered), `user`, `operator`.
+- RBAC: `anonymous` (public diagnose), `user`, org roles, and platform `operator` (Stage 12). Operators are bootstrapped from `NETPULSE_ADMIN_EMAILS` or stored operator records. `/v1/admin/*` is 404 for signed-in non-operators.
 - IDOR: run ids must be unguessable and authorized.
 
 **Not in Stage 01–02 unless specified:** OAuth providers, SSO, magic links. Start with the smallest real session model when account features begin.

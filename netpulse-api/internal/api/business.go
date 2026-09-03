@@ -50,6 +50,7 @@ func (s *Server) requireOrg(w http.ResponseWriter, r *http.Request, orgID string
 		limit = 60
 	}
 	if s.Limiter != nil && !s.Limiter.Allow("orgkey:"+key.ID, limit) {
+		s.recordAbuse(r, "api_abuse", "key:"+key.ID, "orgs", "blocked", "Organization API key rate limit exceeded.")
 		write(w, http.StatusTooManyRequests, contract.Envelope{Error: &contract.APIError{Code: "rate_limited", Message: "API key rate limit exceeded."}})
 		return nil
 	}
@@ -501,6 +502,9 @@ func (s *Server) createOrgMonitor(w http.ResponseWriter, r *http.Request) {
 		DeviceID, NetworkID, ServiceID *string
 	}{body.Name, body.Target, body.Type, body.Regions, body.FrequencySeconds, body.TimeoutSeconds, body.DeviceID, body.NetworkID, body.ServiceID})
 	if errResp != nil {
+		if errResp.Code == "ssrf_blocked" {
+			s.recordAbuse(r, "ssrf", actor.UserID, "org-monitors", "blocked", "Organization monitor target was blocked by SSRF policy.")
+		}
 		write(w, status, contract.Envelope{Error: errResp})
 		return
 	}

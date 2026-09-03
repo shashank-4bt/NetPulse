@@ -1,9 +1,9 @@
 package contract
 
 const (
-	ModelVersion       = "0.11.0"
-	EngineVersion      = "0.11.0"
-	RuleVersion        = "0.11.0-business-platform"
+	ModelVersion       = "0.12.0"
+	EngineVersion      = "0.12.0"
+	RuleVersion        = "0.12.0-admin-platform"
 	MeasurementVersion = "0.6.0-dns-tcp-tls-http"
 	ObservedFailures   = "Elevated connectivity failures observed"
 	ConfidenceCaveat   = "Confidence is not certainty. A level or percentage can be wrong and must not be treated as proof."
@@ -151,72 +151,87 @@ type APIError struct {
 }
 
 type Envelope struct {
-	OK           bool                 `json:"ok"`
-	Diagnosis    *Diagnosis           `json:"diagnosis,omitempty"`
-	Services     []Service            `json:"services,omitempty"`
-	Service      *Service             `json:"service,omitempty"`
-	Intelligence *ServiceIntelligence `json:"intelligence,omitempty"`
-	Incidents    []Incident           `json:"incidents"`
-	Incident     *Incident            `json:"incident,omitempty"`
-	Page         *Page                `json:"page,omitempty"`
-	Health       *Health              `json:"health,omitempty"`
-	Map          *MapAggregates       `json:"map,omitempty"`
-	User         *User                `json:"user,omitempty"`
-	Session      *Session             `json:"session,omitempty"`
-	Sessions     []Session            `json:"sessions,omitempty"`
-	Events       []SecurityEvent      `json:"events,omitempty"`
-	Auth         *AuthState           `json:"auth,omitempty"`
-	Dashboard    *Dashboard           `json:"dashboard,omitempty"`
-	Diagnoses    []DiagnosisSummary   `json:"diagnoses,omitempty"`
-	Reports      []UserReport         `json:"reports,omitempty"`
-	Saved        []SavedService       `json:"savedServices,omitempty"`
-	Devices      []Device             `json:"devices,omitempty"`
-	Alerts       *AlertPreferences    `json:"alerts,omitempty"`
-	Billing      *Billing             `json:"billing,omitempty"`
-	Privacy      *PrivacySettings     `json:"privacy,omitempty"`
-	Share          *ShareLink           `json:"share,omitempty"`
-	SessionToken   string               `json:"sessionToken,omitempty"`
-	Workspace      *Workspace           `json:"workspace,omitempty"`
-	Monitors       []Monitor            `json:"monitors,omitempty"`
-	Monitor        *Monitor             `json:"monitor,omitempty"`
-	APIKeys        []APIKey             `json:"apiKeys,omitempty"`
-	APIKey         *APIKey              `json:"apiKey,omitempty"`
-	KeySecret      string               `json:"keySecret,omitempty"`
-	Webhooks       []Webhook            `json:"webhooks,omitempty"`
-	Webhook        *Webhook             `json:"webhook,omitempty"`
-	WebhookSecret  string               `json:"webhookSecret,omitempty"`
-	Deliveries     []WebhookDelivery    `json:"deliveries,omitempty"`
-	AlertRules     []AlertRule          `json:"alertRules,omitempty"`
-	AlertRule      *AlertRule           `json:"alertRule,omitempty"`
-	Usage          *Usage               `json:"usage,omitempty"`
-	SLA            *SLAReport           `json:"sla,omitempty"`
-	DevDashboard   *DeveloperDashboard  `json:"developerDashboard,omitempty"`
-	DevIncidents   []DeveloperIncident  `json:"developerIncidents,omitempty"`
-	DevIncident    *DeveloperIncident   `json:"developerIncident,omitempty"`
-	Checks         []MonitorCheck       `json:"checks,omitempty"`
-	Organization   *Organization        `json:"organization,omitempty"`
-	Organizations  []Organization       `json:"organizations,omitempty"`
-	Members        []Member             `json:"members,omitempty"`
-	Member         *Member              `json:"member,omitempty"`
-	Teams          []Team               `json:"teams,omitempty"`
-	Team           *Team                `json:"team,omitempty"`
-	OrgDevices     []OrgDevice          `json:"orgDevices,omitempty"`
-	OrgDevice      *OrgDevice           `json:"orgDevice,omitempty"`
-	Networks       []OrgNetwork         `json:"networks,omitempty"`
-	Network        *OrgNetwork          `json:"network,omitempty"`
-	OrgServices    []OrgService         `json:"orgServices,omitempty"`
-	OrgService     *OrgService          `json:"orgService,omitempty"`
-	OrgIncidents   []OrgIncident        `json:"orgIncidents,omitempty"`
-	OrgIncident    *OrgIncident         `json:"orgIncident,omitempty"`
-	OrgDashboard   *OrgDashboard        `json:"orgDashboard,omitempty"`
-	Analytics      *OrgAnalytics        `json:"analytics,omitempty"`
-	OrgReports     []OrgReport          `json:"orgReports,omitempty"`
-	OrgReport      *OrgReport           `json:"orgReport,omitempty"`
-	AuditEvents    []AuditEvent         `json:"auditEvents,omitempty"`
-	Invites        []OrgInvite          `json:"invites,omitempty"`
-	OrgDiagnoses   []OrgDiagnosis       `json:"orgDiagnoses,omitempty"`
-	Permissions    []string             `json:"permissions,omitempty"`
-	Error          *APIError            `json:"error,omitempty"`
+	OK                bool                 `json:"ok"`
+	Diagnosis         *Diagnosis           `json:"diagnosis,omitempty"`
+	Services          []Service            `json:"services,omitempty"`
+	Service           *Service             `json:"service,omitempty"`
+	Intelligence      *ServiceIntelligence `json:"intelligence,omitempty"`
+	Incidents         []Incident           `json:"incidents"`
+	Incident          *Incident            `json:"incident,omitempty"`
+	Page              *Page                `json:"page,omitempty"`
+	Health            *Health              `json:"health,omitempty"`
+	Map               *MapAggregates       `json:"map,omitempty"`
+	User              *User                `json:"user,omitempty"`
+	Session           *Session             `json:"session,omitempty"`
+	Sessions          []Session            `json:"sessions,omitempty"`
+	Events            []SecurityEvent      `json:"events,omitempty"`
+	Auth              *AuthState           `json:"auth,omitempty"`
+	Dashboard         *Dashboard           `json:"dashboard,omitempty"`
+	Diagnoses         []DiagnosisSummary   `json:"diagnoses,omitempty"`
+	Reports           []UserReport         `json:"reports,omitempty"`
+	Saved             []SavedService       `json:"savedServices,omitempty"`
+	Devices           []Device             `json:"devices,omitempty"`
+	Alerts            *AlertPreferences    `json:"alerts,omitempty"`
+	Billing           *Billing             `json:"billing,omitempty"`
+	Privacy           *PrivacySettings     `json:"privacy,omitempty"`
+	Share             *ShareLink           `json:"share,omitempty"`
+	SessionToken      string               `json:"sessionToken,omitempty"`
+	Workspace         *Workspace           `json:"workspace,omitempty"`
+	Monitors          []Monitor            `json:"monitors,omitempty"`
+	Monitor           *Monitor             `json:"monitor,omitempty"`
+	APIKeys           []APIKey             `json:"apiKeys,omitempty"`
+	APIKey            *APIKey              `json:"apiKey,omitempty"`
+	KeySecret         string               `json:"keySecret,omitempty"`
+	Webhooks          []Webhook            `json:"webhooks,omitempty"`
+	Webhook           *Webhook             `json:"webhook,omitempty"`
+	WebhookSecret     string               `json:"webhookSecret,omitempty"`
+	Deliveries        []WebhookDelivery    `json:"deliveries,omitempty"`
+	AlertRules        []AlertRule          `json:"alertRules,omitempty"`
+	AlertRule         *AlertRule           `json:"alertRule,omitempty"`
+	Usage             *Usage               `json:"usage,omitempty"`
+	SLA               *SLAReport           `json:"sla,omitempty"`
+	DevDashboard      *DeveloperDashboard  `json:"developerDashboard,omitempty"`
+	DevIncidents      []DeveloperIncident  `json:"developerIncidents,omitempty"`
+	DevIncident       *DeveloperIncident   `json:"developerIncident,omitempty"`
+	Checks            []MonitorCheck       `json:"checks,omitempty"`
+	Organization      *Organization        `json:"organization,omitempty"`
+	Organizations     []Organization       `json:"organizations,omitempty"`
+	Members           []Member             `json:"members,omitempty"`
+	Member            *Member              `json:"member,omitempty"`
+	Teams             []Team               `json:"teams,omitempty"`
+	Team              *Team                `json:"team,omitempty"`
+	OrgDevices        []OrgDevice          `json:"orgDevices,omitempty"`
+	OrgDevice         *OrgDevice           `json:"orgDevice,omitempty"`
+	Networks          []OrgNetwork         `json:"networks,omitempty"`
+	Network           *OrgNetwork          `json:"network,omitempty"`
+	OrgServices       []OrgService         `json:"orgServices,omitempty"`
+	OrgService        *OrgService          `json:"orgService,omitempty"`
+	OrgIncidents      []OrgIncident        `json:"orgIncidents,omitempty"`
+	OrgIncident       *OrgIncident         `json:"orgIncident,omitempty"`
+	OrgDashboard      *OrgDashboard        `json:"orgDashboard,omitempty"`
+	Analytics         *OrgAnalytics        `json:"analytics,omitempty"`
+	OrgReports        []OrgReport          `json:"orgReports,omitempty"`
+	OrgReport         *OrgReport           `json:"orgReport,omitempty"`
+	AuditEvents       []AuditEvent         `json:"auditEvents,omitempty"`
+	Invites           []OrgInvite          `json:"invites,omitempty"`
+	OrgDiagnoses      []OrgDiagnosis       `json:"orgDiagnoses,omitempty"`
+	Permissions       []string             `json:"permissions,omitempty"`
+	Operator          *Operator            `json:"operator,omitempty"`
+	AdminSystem       *AdminSystem         `json:"adminSystem,omitempty"`
+	AdminUsers        []AdminUser          `json:"adminUsers,omitempty"`
+	AdminUser         *AdminUser           `json:"adminUser,omitempty"`
+	AdminMeasurements []AdminMeasurement   `json:"adminMeasurements,omitempty"`
+	AdminDiagnoses    []AdminDiagnosis     `json:"adminDiagnoses,omitempty"`
+	AdminRules        []DiagnosticRule     `json:"adminRules,omitempty"`
+	RuleOutcomes      *RuleOutcomes        `json:"ruleOutcomes,omitempty"`
+	AbuseEvents       []AbuseEvent         `json:"abuseEvents,omitempty"`
+	AdminAudit        []AdminAudit         `json:"adminAudit,omitempty"`
+	FeatureFlags      []FeatureFlag        `json:"featureFlags,omitempty"`
+	FeatureFlag       *FeatureFlag         `json:"featureFlag,omitempty"`
+	RemoteConfig      []RemoteConfigEntry  `json:"remoteConfig,omitempty"`
+	AdminIncidents    []AdminIncident      `json:"adminIncidents,omitempty"`
+	AdminIncident     *AdminIncident       `json:"adminIncident,omitempty"`
+	Error             *APIError            `json:"error,omitempty"`
 }
 
 type Service struct {
@@ -376,11 +391,11 @@ type AlertPreferences struct {
 }
 
 type Billing struct {
-	HasAccount       bool           `json:"hasAccount"`
-	OrganizationID   *string        `json:"organizationId"`
-	Plan             *string        `json:"plan"`
-	Invoices         []BillingInvoice `json:"invoices"`
-	Summary          string         `json:"summary"`
+	HasAccount     bool             `json:"hasAccount"`
+	OrganizationID *string          `json:"organizationId"`
+	Plan           *string          `json:"plan"`
+	Invoices       []BillingInvoice `json:"invoices"`
+	Summary        string           `json:"summary"`
 }
 
 type BillingInvoice struct {
@@ -390,11 +405,11 @@ type BillingInvoice struct {
 }
 
 type PrivacySettings struct {
-	TelemetryOptIn bool   `json:"telemetryOptIn"`
-	Retention      string `json:"retention"`
-	Deletion       string `json:"deletion"`
-	Collected      string `json:"collected"`
-	Purpose        string `json:"purpose"`
+	TelemetryOptIn  bool   `json:"telemetryOptIn"`
+	Retention       string `json:"retention"`
+	Deletion        string `json:"deletion"`
+	Collected       string `json:"collected"`
+	Purpose         string `json:"purpose"`
 	BrowsingHistory string `json:"browsingHistory"`
 }
 
@@ -405,13 +420,13 @@ type ShareLink struct {
 }
 
 type Dashboard struct {
-	InternetHealth string              `json:"internetHealth"`
-	NetworkInfo    string              `json:"networkInfo"`
-	Diagnoses      []DiagnosisSummary  `json:"diagnoses"`
-	SavedServices  []SavedService      `json:"savedServices"`
-	Incidents      []Incident          `json:"incidents"`
-	Reports        []UserReport        `json:"reports"`
-	Alerts         AlertPreferences    `json:"alerts"`
+	InternetHealth string             `json:"internetHealth"`
+	NetworkInfo    string             `json:"networkInfo"`
+	Diagnoses      []DiagnosisSummary `json:"diagnoses"`
+	SavedServices  []SavedService     `json:"savedServices"`
+	Incidents      []Incident         `json:"incidents"`
+	Reports        []UserReport       `json:"reports"`
+	Alerts         AlertPreferences   `json:"alerts"`
 }
 
 func EmptyAuthMethods() AuthMethods {
@@ -430,11 +445,11 @@ func EmptyBilling() Billing {
 
 func DefaultPrivacy() PrivacySettings {
 	return PrivacySettings{
-		TelemetryOptIn: false,
-		Collected:      "Account email, password hash, session metadata, diagnoses you start while signed in, and saved service slugs.",
-		Purpose:        "Sign-in, session security, and showing your own diagnosis history. Not advertising.",
-		Retention:      "Sessions expire after 7 days of inactivity policy or on revoke. Raw probe observations stay short-lived. Exact store TTLs are not claimed beyond that.",
-		Deletion:       "You can delete the account. That removes the user, sessions, tokens, saved services, and owned diagnoses from this store.",
+		TelemetryOptIn:  false,
+		Collected:       "Account email, password hash, session metadata, diagnoses you start while signed in, and saved service slugs.",
+		Purpose:         "Sign-in, session security, and showing your own diagnosis history. Not advertising.",
+		Retention:       "Sessions expire after 7 days of inactivity policy or on revoke. Raw probe observations stay short-lived. Exact store TTLs are not claimed beyond that.",
+		Deletion:        "You can delete the account. That removes the user, sessions, tokens, saved services, and owned diagnoses from this store.",
 		BrowsingHistory: "NetPulse does not collect a browsing history. Diagnosis uses only the target you submit.",
 	}
 }
@@ -491,18 +506,18 @@ type MonitorCheck struct {
 }
 
 type APIKey struct {
-	ID             string   `json:"id"`
-	WorkspaceID    string   `json:"-"`
-	OrgID          string   `json:"-"`
-	Name           string   `json:"name"`
-	Prefix         string   `json:"prefix"`
-	Last4          string   `json:"last4"`
-	Hash           string   `json:"-"`
-	Scopes         []string `json:"scopes"`
-	RateLimitPerMin int     `json:"rateLimitPerMin"`
-	Revoked        bool     `json:"revoked"`
-	CreatedAt      string   `json:"createdAt"`
-	LastUsedAt     *string  `json:"lastUsedAt"`
+	ID              string   `json:"id"`
+	WorkspaceID     string   `json:"-"`
+	OrgID           string   `json:"-"`
+	Name            string   `json:"name"`
+	Prefix          string   `json:"prefix"`
+	Last4           string   `json:"last4"`
+	Hash            string   `json:"-"`
+	Scopes          []string `json:"scopes"`
+	RateLimitPerMin int      `json:"rateLimitPerMin"`
+	Revoked         bool     `json:"revoked"`
+	CreatedAt       string   `json:"createdAt"`
+	LastUsedAt      *string  `json:"lastUsedAt"`
 }
 
 type Webhook struct {
@@ -545,15 +560,15 @@ type AlertRule struct {
 }
 
 type DeveloperIncident struct {
-	ID          string `json:"id"`
-	WorkspaceID string `json:"-"`
-	MonitorID   string `json:"monitorId"`
-	Title       string `json:"title"`
-	Status      string `json:"status"`
-	StartedAt   string `json:"startedAt"`
+	ID          string  `json:"id"`
+	WorkspaceID string  `json:"-"`
+	MonitorID   string  `json:"monitorId"`
+	Title       string  `json:"title"`
+	Status      string  `json:"status"`
+	StartedAt   string  `json:"startedAt"`
 	ResolvedAt  *string `json:"resolvedAt"`
-	SampleCount int    `json:"sampleCount"`
-	Summary     string `json:"summary"`
+	SampleCount int     `json:"sampleCount"`
+	Summary     string  `json:"summary"`
 }
 
 type Usage struct {
@@ -581,20 +596,20 @@ type RegionalSlice struct {
 }
 
 type DeveloperDashboard struct {
-	Availability Observation      `json:"availability"`
-	Latency      PercentilePoint  `json:"latency"`
+	Availability Observation         `json:"availability"`
+	Latency      PercentilePoint     `json:"latency"`
 	Incidents    []DeveloperIncident `json:"incidents"`
-	Regional     []RegionalSlice  `json:"regionalPerformance"`
-	Summary      string           `json:"summary"`
+	Regional     []RegionalSlice     `json:"regionalPerformance"`
+	Summary      string              `json:"summary"`
 }
 
 type SLAReport struct {
-	Availability Observation      `json:"availability"`
-	Downtime     Observation      `json:"downtime"`
-	Latency      PercentilePoint  `json:"latency"`
+	Availability Observation         `json:"availability"`
+	Downtime     Observation         `json:"downtime"`
+	Latency      PercentilePoint     `json:"latency"`
 	Incidents    []DeveloperIncident `json:"incidents"`
-	Regional     []RegionalSlice  `json:"regionalPerformance"`
-	Summary      string           `json:"summary"`
+	Regional     []RegionalSlice     `json:"regionalPerformance"`
+	Summary      string              `json:"summary"`
 }
 
 func EmptyPercentiles() PercentilePoint {
@@ -879,28 +894,28 @@ type OrgAnalytics struct {
 }
 
 type OrgReport struct {
-	ID            string          `json:"id"`
-	OrgID         string          `json:"-"`
-	Kind          string          `json:"kind"`
-	Title         string          `json:"title"`
-	Availability  Observation     `json:"availability"`
-	Latency       PercentilePoint `json:"latency"`
-	Incidents     []OrgIncident   `json:"incidents"`
-	Regions       []RegionalSlice `json:"regions"`
-	Networks      []OrgNetwork    `json:"networks"`
-	Findings      []string        `json:"findings"`
-	SampleCount   int             `json:"sampleCount"`
-	CreatedAt     string          `json:"createdAt"`
-	Summary       string          `json:"summary"`
+	ID           string          `json:"id"`
+	OrgID        string          `json:"-"`
+	Kind         string          `json:"kind"`
+	Title        string          `json:"title"`
+	Availability Observation     `json:"availability"`
+	Latency      PercentilePoint `json:"latency"`
+	Incidents    []OrgIncident   `json:"incidents"`
+	Regions      []RegionalSlice `json:"regions"`
+	Networks     []OrgNetwork    `json:"networks"`
+	Findings     []string        `json:"findings"`
+	SampleCount  int             `json:"sampleCount"`
+	CreatedAt    string          `json:"createdAt"`
+	Summary      string          `json:"summary"`
 }
 
 type AuditEvent struct {
-	ID        string `json:"id"`
-	OrgID     string `json:"-"`
-	ActorID   string `json:"actorId"`
-	Kind      string `json:"kind"`
-	At        string `json:"at"`
-	Summary   string `json:"summary"`
+	ID      string `json:"id"`
+	OrgID   string `json:"-"`
+	ActorID string `json:"actorId"`
+	Kind    string `json:"kind"`
+	At      string `json:"at"`
+	Summary string `json:"summary"`
 }
 
 func EmptyOrgDashboard() OrgDashboard {
@@ -923,6 +938,160 @@ func EmptyOrgAnalytics() OrgAnalytics {
 		Latency:      EmptyPercentiles(),
 		Incidents:    []OrgIncident{},
 		Summary:      "No stored samples match the selected filters.",
+	}
+}
+
+type Operator struct {
+	UserID      string   `json:"userId"`
+	Email       string   `json:"email"`
+	Role        string   `json:"role"`
+	Permissions []string `json:"permissions"`
+}
+
+type HealthComponent struct {
+	Name     string `json:"name"`
+	Status   string `json:"status"`
+	Detail   string `json:"detail"`
+	Measured bool   `json:"measured"`
+}
+
+type AdminSystem struct {
+	API                 HealthComponent `json:"api"`
+	Worker              HealthComponent `json:"worker"`
+	Queue               HealthComponent `json:"queue"`
+	Database            HealthComponent `json:"database"`
+	Cache               HealthComponent `json:"cache"`
+	MeasurementFailures Observation     `json:"measurementFailures"`
+	ErrorRate           Observation     `json:"errorRates"`
+	Latency             PercentilePoint `json:"latency"`
+	Summary             string          `json:"summary"`
+}
+
+type AdminUser struct {
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	DisplayName   string `json:"displayName"`
+	EmailVerified bool   `json:"emailVerified"`
+	CreatedAt     string `json:"createdAt"`
+	Summary       string `json:"summary"`
+}
+
+type AdminMeasurement struct {
+	DiagnosisID string `json:"diagnosisId"`
+	Key         string `json:"key"`
+	Label       string `json:"label"`
+	Measured    bool   `json:"measured"`
+	Summary     string `json:"summary"`
+}
+
+type AdminDiagnosis struct {
+	ID        string `json:"id"`
+	Target    string `json:"target"`
+	Status    string `json:"status"`
+	UserID    string `json:"userId,omitempty"`
+	CreatedAt string `json:"createdAt"`
+	Summary   string `json:"summary"`
+}
+
+type DiagnosticRule struct {
+	ID         string            `json:"id"`
+	Name       string            `json:"name"`
+	Version    string            `json:"version"`
+	Layer      string            `json:"layer"`
+	Thresholds map[string]string `json:"thresholds"`
+	Summary    string            `json:"summary"`
+}
+
+type RuleOutcomes struct {
+	Statuses       map[string]int `json:"statuses"`
+	FalsePositives int            `json:"falsePositives"`
+	FalseNegatives int            `json:"falseNegatives"`
+	SampleCount    int            `json:"sampleCount"`
+	Summary        string         `json:"summary"`
+}
+
+type AbuseEvent struct {
+	ID       string `json:"id"`
+	Kind     string `json:"kind"`
+	Actor    string `json:"actor"`
+	IP       string `json:"ip"`
+	Resource string `json:"resource"`
+	At       string `json:"at"`
+	Result   string `json:"result"`
+	Summary  string `json:"summary"`
+}
+
+type AdminAudit struct {
+	ID       string `json:"id"`
+	ActorID  string `json:"actorId"`
+	Action   string `json:"action"`
+	Resource string `json:"resource"`
+	At       string `json:"at"`
+	Result   string `json:"result"`
+	Summary  string `json:"summary"`
+}
+
+type FeatureFlag struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Environment string   `json:"environment"`
+	Enabled     bool     `json:"enabled"`
+	Percentage  int      `json:"percentage"`
+	UserIDs     []string `json:"userIds"`
+	OrgIDs      []string `json:"orgIds"`
+	UpdatedAt   string   `json:"updatedAt"`
+	Summary     string   `json:"summary"`
+	TargetMatch *bool    `json:"targetMatch,omitempty"`
+}
+
+type RemoteConfigEntry struct {
+	Key       string `json:"key"`
+	Value     string `json:"value"`
+	UpdatedAt string `json:"updatedAt"`
+	Summary   string `json:"summary"`
+}
+
+type IncidentNote struct {
+	ID         string `json:"id"`
+	IncidentID string `json:"incidentId"`
+	Kind       string `json:"kind"`
+	Body       string `json:"body"`
+	ActorID    string `json:"actorId"`
+	At         string `json:"at"`
+}
+
+type IncidentOverride struct {
+	Classification string `json:"classification"`
+	Reason         string `json:"reason"`
+	ActorID        string `json:"actorId"`
+	At             string `json:"at"`
+}
+
+type AdminIncident struct {
+	Incident
+	Notes    []IncidentNote    `json:"notes"`
+	Override *IncidentOverride `json:"override"`
+}
+
+type RuleLabel struct {
+	ID          string `json:"id"`
+	DiagnosisID string `json:"diagnosisId"`
+	Kind        string `json:"kind"`
+	ActorID     string `json:"actorId"`
+	At          string `json:"at"`
+}
+
+func EmptyAdminSystem() AdminSystem {
+	return AdminSystem{
+		API:                 HealthComponent{Name: "API", Status: "up", Detail: "This process answered the request.", Measured: true},
+		Worker:              HealthComponent{Name: "Worker", Status: "unmeasured", Detail: "No worker heartbeat is stored.", Measured: false},
+		Queue:               HealthComponent{Name: "Queue", Status: "observed", Detail: "Queue depth: 0.", Measured: true},
+		Database:            HealthComponent{Name: "Database", Status: "unmeasured", Detail: "No live database probe is stored.", Measured: false},
+		Cache:               HealthComponent{Name: "Cache", Status: "unmeasured", Detail: "No live cache probe is stored.", Measured: false},
+		MeasurementFailures: UnmeasuredObservation("Measurement failures"),
+		ErrorRate:           UnmeasuredObservation("Error rate"),
+		Latency:             EmptyPercentiles(),
+		Summary:             "System figures use stored process state and stored measurements only. Empty series stay unmeasured.",
 	}
 }
 

@@ -1,8 +1,8 @@
 # NETPULSE Implementation Plan
 
-**Current stage:** 10 — Developer platform  
-**Date:** 2026-09-02  
-**Status:** Stages 01–10 implemented. Signed-in workspaces store HTTP/DNS/TLS monitors, hashed API keys, and signed webhooks. Dashboard and SLA stay unmeasured until checks are stored.
+**Current stage:** 12 — Admin platform  
+**Date:** 2026-09-03  
+**Status:** Stages 01–12 implemented. Internal operators can inspect stored system state, incidents, abuse, audit, feature flags, and remote configuration. Empty series stay unmeasured.
 
 This plan is derived from:
 
@@ -194,7 +194,18 @@ The original plan listed accounts here. Accounts shipped as Stage 09.
 - Organization API keys (`npo_`) are hashed. Raw secrets return once. Keys cannot mint other keys.
 - Org billing stays empty (`hasAccount: false`). Dashboard/analytics/reports stay unmeasured until stored checks exist.
 
-### Stage 12 — Hardening & operations
+### Stage 12 — Admin platform *(this repo)*
+
+- `/admin`, `/admin/users`, `/admin/organizations`, `/admin/services`, `/admin/incidents`, `/admin/measurements`, `/admin/diagnostics`, `/admin/rules`, `/admin/abuse`, `/admin/audit`, `/admin/system`.
+- Platform operators only. Signed-in non-operators receive 404 on `/v1/admin/*` so the admin surface is not advertised. Unauthenticated requests are 401. Missing operator permission is 403.
+- System dashboard uses this process, stored worker heartbeats, queue depth, configured backend names, and stored measurements. Empty error-rate and latency series stay unmeasured.
+- Incident operations: investigate, annotate, escalate, resolve, override. Every classification override is audited with actor, action, resource, timestamp, and result.
+- Diagnostic rules catalog versions and thresholds from the shipped engine plus remote config. False positives and false negatives stay 0 until an operator stores a label.
+- Abuse events are stored when rate limits fire and when SSRF blocks diagnose or webhook targets.
+- Feature flags support environment, percentage rollout, user targeting, and organization targeting. Rollout user counts are not estimated.
+- Remote configuration stores timeouts, diagnostic thresholds, limits, and feature settings. Secrets are rejected.
+
+### Stage 13 — Hardening & operations
 
 - CI (lint, typecheck, test, build).
 - Rate limits, WAF later if needed.
@@ -202,7 +213,7 @@ The original plan listed accounts here. Accounts shipped as Stage 09.
 - Structured logging, correlation ids.
 - Load/error budgets for diagnose endpoints.
 
-### Stage 13 — Future Internet Observatory (deferred)
+### Stage 14 — Future Internet Observatory (deferred)
 
 - Kafka/Redpanda, object storage, Neo4j, ECS/Fargate, Terraform, Cloudflare — **only with a written need**.
 
@@ -260,4 +271,4 @@ Do not mark a stage complete with known critical issues.
 
 ## 7. Next recommended stage
 
-**Stage 12 — Hardening & operations:** CI, Compose for local stores, and operational budgets.
+**Stage 13 — Hardening & operations:** CI, Compose for local stores, and operational budgets.

@@ -373,3 +373,69 @@ CREATE TABLE IF NOT EXISTS org_audit (
   at TIMESTAMPTZ NOT NULL,
   summary TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS operators (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  role TEXT NOT NULL,
+  permissions TEXT[] NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS admin_audit (
+  id UUID PRIMARY KEY,
+  actor_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  resource TEXT NOT NULL,
+  at TIMESTAMPTZ NOT NULL,
+  result TEXT NOT NULL,
+  summary TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS abuse_events (
+  id UUID PRIMARY KEY,
+  kind TEXT NOT NULL,
+  actor TEXT NOT NULL,
+  ip TEXT NOT NULL,
+  resource TEXT NOT NULL,
+  at TIMESTAMPTZ NOT NULL,
+  result TEXT NOT NULL,
+  summary TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS feature_flags (
+  id UUID PRIMARY KEY,
+  name TEXT NOT NULL,
+  environment TEXT NOT NULL DEFAULT '',
+  enabled BOOLEAN NOT NULL DEFAULT false,
+  percentage INTEGER NOT NULL DEFAULT 0,
+  user_ids TEXT[] NOT NULL DEFAULT '{}',
+  org_ids TEXT[] NOT NULL DEFAULT '{}',
+  updated_at TIMESTAMPTZ NOT NULL,
+  summary TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS incident_notes (
+  id UUID PRIMARY KEY,
+  incident_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  body TEXT NOT NULL,
+  actor_id TEXT NOT NULL,
+  at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS incident_overrides (
+  incident_id TEXT PRIMARY KEY,
+  classification TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  actor_id TEXT NOT NULL,
+  at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rule_labels (
+  id UUID PRIMARY KEY,
+  diagnosis_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  actor_id TEXT NOT NULL,
+  at TIMESTAMPTZ NOT NULL
+);
+

@@ -1,11 +1,12 @@
 import Link from "next/link";
 
 import { ACCOUNT_NAV, DASHBOARD_NAV } from "@/domain/account";
+import { ADMIN_NAV } from "@/domain/admin";
 import { BUSINESS_NAV } from "@/domain/business";
 import { DEVELOPER_NAV } from "@/domain/developer";
 
 type SignedInNavProps = {
-  kind: "dashboard" | "account" | "developer" | "business";
+  kind: "dashboard" | "account" | "developer" | "business" | "admin";
 };
 
 export function SignedInNav({ kind }: SignedInNavProps) {
@@ -16,7 +17,9 @@ export function SignedInNav({ kind }: SignedInNavProps) {
         ? ACCOUNT_NAV
         : kind === "developer"
           ? DEVELOPER_NAV
-          : BUSINESS_NAV;
+          : kind === "admin"
+            ? ADMIN_NAV
+            : BUSINESS_NAV;
   const label =
     kind === "dashboard"
       ? "Dashboard"
@@ -24,7 +27,9 @@ export function SignedInNav({ kind }: SignedInNavProps) {
         ? "Account"
         : kind === "developer"
           ? "Developer workspace"
-          : "Business workspace";
+          : kind === "admin"
+            ? "Operations"
+            : "Business workspace";
   return (
     <nav aria-label={label} className="flex flex-wrap gap-2">
       {items.map((item) => (

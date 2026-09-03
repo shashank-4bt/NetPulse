@@ -205,6 +205,16 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Alert `deliveredCount` increments only when a threshold or incident event is recorded. Email is not sent.
 - Postgres tables exist in `schema/postgres.sql`. The runtime adapter remains an unlinked stub.
 
+## 17. Stage 12 notes
+
+- Platform operators are not advertised on `/v1/auth/me`. `GET /v1/admin/me` is the only operator probe. Non-operators receive 404.
+- System dashboard reports process up, configured storage backend names, queue depth, and stored worker heartbeats. It does not invent 99.9% uptime, error rates, or latency percentiles.
+- Abuse events are recorded when diagnose/auth/API-key rate limits fire and when SSRF blocks a diagnose or webhook target. Counts stay empty until those events exist.
+- Diagnostic false positives/negatives stay 0 until an operator stores a label.
+- Feature flags store environment, percentage, user ids, and org ids. They do not estimate how many users are in rollout.
+- Remote configuration overlays timeouts, diagnostic thresholds, and limits. Operational secrets are rejected. Postgres `configuration` remains the durable table; the runtime adapter is still an unlinked stub.
+- `/admin` is not linked from public navigation and is disallowed in `robots.ts`.
+
 ## 7. Stage 02 decisions
 
 - Web app lives in `netpulse-web/` because npm package names cannot contain capitals (`NetPulse`). Root scripts proxy into that package. This is a **PRODUCTION ENGINEERING REQUIREMENT**, not a product feature.
