@@ -127,6 +127,12 @@ func TestDeveloperWebhookSSRFAndEmptySLA(t *testing.T) {
 	if status != 403 || private.Webhook != nil {
 		t.Fatalf("metadata webhook must be blocked, got %d", status)
 	}
+	azure, status := sessionDo(t, ts, http.MethodPost, token, "/v1/dev/webhooks", `{
+		"url":"https://168.63.129.16/metadata","events":["monitor.down"]
+	}`)
+	if status != 403 || azure.Webhook != nil {
+		t.Fatalf("Azure IMDS webhook must be blocked, got %d", status)
+	}
 	httpHook, status := sessionDo(t, ts, http.MethodPost, token, "/v1/dev/webhooks", `{
 		"url":"http://example.com/hook","events":["monitor.down"]
 	}`)

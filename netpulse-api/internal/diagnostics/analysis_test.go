@@ -1,6 +1,7 @@
 package diagnostics
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -34,5 +35,15 @@ func TestAnalyzeNeverNamesAUserPathCause(t *testing.T) {
 	}
 	if report.Recommendations[0].AutoExecute {
 		t.Fatal("recommendations must not auto-execute")
+	}
+	blob := report.Recommendations[0].Action + report.Recommendations[0].Reason + report.InsufficientEvidence.Message
+	for _, panicPhrase := range []string{
+		"definitely infected",
+		"your device is infected",
+		"your device is definitely",
+	} {
+		if strings.Contains(strings.ToLower(blob), panicPhrase) {
+			t.Fatalf("diagnostic copy must not use panic language %q", panicPhrase)
+		}
 	}
 }

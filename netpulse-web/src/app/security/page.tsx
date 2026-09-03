@@ -26,19 +26,23 @@ export default function SecurityPage() {
             SSRF policy
           </h2>
           <p>
-            The diagnose form already rejects localhost and private IPv4
-            literals. Server-side workers will resolve DNS, check the resulting
-            addresses, and re-validate after redirects before connecting.
+            Diagnose input and workers deny localhost, loopback, private ranges,
+            link-local, CGNAT, documentation prefixes, and cloud metadata
+            (including Azure IMDS). DNS is resolved, every address is checked,
+            connections pin a public IP, and redirects are revalidated so a
+            public hostname cannot bounce into a private one.
           </p>
         </section>
         <section aria-labelledby="session-heading" className="space-y-2">
           <h2 id="session-heading" className="text-lg font-semibold text-foreground">
-            Sessions
+            Sessions and browser security
           </h2>
           <p>
             Sessions use the HTTP-only <code>np_session</code> cookie. Tokens
-            are not stored in localStorage. OAuth, passkeys, and MFA endpoints
-            exist but stay unavailable until a provider is configured.
+            are not stored in localStorage. Cookie-authenticated mutations
+            require a same-origin request. Pages send Content-Security-Policy,
+            frame denial, and related headers. OAuth, passkeys, and MFA
+            endpoints exist but stay unavailable until a provider is configured.
           </p>
         </section>
         <section aria-labelledby="abuse-heading" className="space-y-2">
@@ -46,9 +50,10 @@ export default function SecurityPage() {
             Abuse
           </h2>
           <p>
-            Diagnose endpoints will be rate-limited. The current form does not
-            send probes, so it cannot be used to scan third parties from
-            NetPulse infrastructure.
+            Diagnose and authentication endpoints are rate-limited by the
+            connecting address. Client-supplied <code>X-Forwarded-For</code> is
+            not trusted unless a reverse proxy is explicitly configured to
+            overwrite it.
           </p>
         </section>
         <Button

@@ -8,7 +8,7 @@ describe("reports JSON API", () => {
     const response = await POST(
       new Request("http://localhost/api/reports", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", origin: "http://localhost" },
         body: JSON.stringify({ target: "localhost" }),
       })
     );
@@ -22,7 +22,7 @@ describe("reports JSON API", () => {
     const response = await POST(
       new Request("http://localhost/api/reports", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", origin: "http://localhost" },
         body: JSON.stringify({ target: "youtube.com" }),
       })
     );
@@ -50,6 +50,31 @@ describe("reports JSON API", () => {
       params: Promise.resolve({ id: body.document.report.reportId }),
     });
     expect(fetched.status).toBe(200);
+  });
+
+  it("rejects cross-origin report creation", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          origin: "https://evil.example",
+        },
+        body: JSON.stringify({ target: "youtube.com" }),
+      })
+    );
+    expect(response.status).toBe(403);
+  });
+
+  it("rejects report creation without Origin or CSRF header", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: "youtube.com" }),
+      })
+    );
+    expect(response.status).toBe(403);
   });
 
   it("does not treat a missing report as a failed diagnosis", async () => {

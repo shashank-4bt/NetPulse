@@ -6,6 +6,7 @@ import { useState, type ComponentProps, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { safeNext } from "@/lib/auth/safe-next";
 
 type AuthFormProps = {
   mode: "login" | "register" | "forgot" | "reset" | "verify";
@@ -49,7 +50,7 @@ export function AuthForm({ mode, nextPath = "/dashboard", token = "" }: AuthForm
         return;
       }
       if (mode === "login" || mode === "register") {
-        router.push(nextPath);
+        router.push(safeNext(nextPath));
         router.refresh();
         return;
       }

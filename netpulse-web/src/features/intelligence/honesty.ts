@@ -57,6 +57,10 @@ export function reportHonestyErrors(report: DiagnosticReport): string[] {
     }
   }
 
+  if (PANIC_PHRASES.some((phrase) => reportText(report).includes(phrase))) {
+    errors.push("Diagnostic copy must not claim a device is definitely infected.");
+  }
+
   if (report.confidence.caveat.trim() === "") {
     errors.push("Confidence must include a no-certainty caveat.");
   }
@@ -66,4 +70,27 @@ export function reportHonestyErrors(report: DiagnosticReport): string[] {
 
 export function isDangerous(recommendation: Recommendation): boolean {
   return recommendation.safetyClass === "dangerous";
+}
+
+const PANIC_PHRASES = [
+  "definitely infected",
+  "your device is infected",
+  "your device is definitely",
+];
+
+function reportText(report: DiagnosticReport): string {
+  const parts = [
+    report.likelyCause ?? "",
+    report.insufficientEvidence.message,
+    report.insufficientEvidence.nextCheck,
+    ...report.recommendations.flatMap((item) => [
+      item.action,
+      item.reason,
+      item.risk,
+      item.expectedResult,
+      item.verification,
+    ]),
+    ...report.evidence.map((item) => `${item.title} ${item.body}`),
+  ];
+  return parts.join(" ").toLowerCase();
 }

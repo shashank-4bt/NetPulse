@@ -29,6 +29,7 @@ describe("RecommendationList", () => {
     expect(screen.getByText("Expected result")).toBeInTheDocument();
     expect(screen.getByText("Verification")).toBeInTheDocument();
     expect(screen.getByText("Dangerous — not executed")).toBeInTheDocument();
+    expect(screen.getByText(/Possible security concern/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /execute/i })).not.toBeInTheDocument();
   });
 });

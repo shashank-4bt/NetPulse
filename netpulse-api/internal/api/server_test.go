@@ -41,7 +41,7 @@ func setup(t *testing.T) (*httptest.Server, *memory.Store, *worker.Worker) {
 			ID: "measurement-dns", Key: "dns", Label: "DNS", Value: "1", Measured: true,
 		}},
 	}}
-	cfg := config.Config{CORSOrigin: "http://localhost:3000", RateLimitPerMin: 40, EngineVersion: "0.12.0", AuthDevTokens: true, SessionTTLHours: 168, Environment: "test"}
+	cfg := config.Config{CORSOrigin: "http://localhost:3000", RateLimitPerMin: 40, EngineVersion: "0.13.0", AuthDevTokens: true, SessionTTLHours: 168, Environment: "test"}
 	adminSvc := &admin.Service{
 		Store: store, Diagnoses: store, Queue: store, Cfg: cfg,
 		StorageInfo: map[string]string{"postgres": "memory", "clickhouse": "memory", "redis": "memory"},
@@ -72,6 +72,15 @@ func TestHealthAndServices(t *testing.T) {
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
 		t.Fatalf("health %d", res.StatusCode)
+	}
+	if res.Header.Get("X-Content-Type-Options") != "nosniff" {
+		t.Fatal("API responses must set nosniff")
+	}
+	if res.Header.Get("X-Frame-Options") != "DENY" {
+		t.Fatal("API responses must deny framing")
+	}
+	if res.Header.Get("Content-Security-Policy") == "" {
+		t.Fatal("API responses must set a CSP")
 	}
 	var health contract.Envelope
 	if err := json.NewDecoder(res.Body).Decode(&health); err != nil {
@@ -332,6 +341,52 @@ func TestIncidentFiltersDoNotInventMatches(t *testing.T) {
 	}
 	if got.Incident == nil || got.Incident.AffectedUserCount != nil {
 		t.Fatal("stored incidents must not invent affected-user counts")
+	}
+}
+
+func TestAuthRateLimitIgnoresSpoofedXForwardedFor(t *testing.T) {
+	store := memory.New()
+	svc := &diagnostics.Service{Store: store, Queue: store}
+	cfg := config.Config{CORSOrigin: "http://localhost:3000", RateLimitPerMin: 1, EngineVersion: "0.13.0", SessionTTLHours: 168, Environment: "test"}
+	server := &api.Server{
+		Cfg:         cfg,
+		Diagnostics: svc,
+		Accounts:    &accounts.Service{Accounts: store, Diagnoses: store, SessionTTL: 7 * 24 * time.Hour},
+		Limiter:     store,
+	}
+	ts := httptest.NewServer(server.Handler())
+	t.Cleanup(ts.Close)
+
+	body := bytes.NewBufferString(`{"email":"a@example.com","password":"correct-horse-battery"}`)
+	req, err := http.NewRequest(http.MethodPost, ts.URL+"/v1/auth/login", body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Forwarded-For", "8.8.8.8")
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode == http.StatusTooManyRequests {
+		t.Fatal("first auth attempt should not be rate limited")
+	}
+
+	body2 := bytes.NewBufferString(`{"email":"b@example.com","password":"correct-horse-battery"}`)
+	req2, err := http.NewRequest(http.MethodPost, ts.URL+"/v1/auth/login", body2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req2.Header.Set("Content-Type", "application/json")
+	req2.Header.Set("X-Forwarded-For", "1.1.1.1")
+	res2, err := http.DefaultClient.Do(req2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res2.Body.Close()
+	if res2.StatusCode != http.StatusTooManyRequests {
+		t.Fatalf("spoofed XFF must not bypass auth rate limit, got %d", res2.StatusCode)
 	}
 }
 

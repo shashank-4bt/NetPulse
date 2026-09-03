@@ -41,7 +41,7 @@ func (s *Server) recordAbuse(r *http.Request, kind, actor, resource, result, sum
 	if s.Admin == nil {
 		return
 	}
-	s.Admin.RecordAbuse(r.Context(), kind, actor, ClientIP(r), resource, result, summary)
+	s.Admin.RecordAbuse(r.Context(), kind, actor, s.clientIP(r), resource, result, summary)
 }
 
 func (s *Server) diagnoseLimit(r *http.Request) int {

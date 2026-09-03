@@ -38,6 +38,15 @@ export function RecommendationList({ recommendations }: RecommendationListProps)
                 <Badge variant="outline">{SAFETY_LABEL[item.safetyClass]}</Badge>
                 <Badge variant="outline">Not auto-executed</Badge>
               </div>
+              {item.safetyClass === "dangerous" ? (
+                <p className="text-sm text-muted-foreground">
+                  Possible security concern. NetPulse does not execute this
+                  action. Confirm the evidence, confidence, and a recovery plan
+                  before you act. Do not delete files, change registry settings,
+                  disable security tools, factory-reset, or flash firmware from
+                  this report.
+                </p>
+              ) : null}
               <dl className="grid gap-3 text-sm">
                 <div>
                   <dt className="font-medium">Action</dt>

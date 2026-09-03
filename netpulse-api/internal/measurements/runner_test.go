@@ -111,3 +111,31 @@ func TestRevalidateBlocksLoopbackURL(t *testing.T) {
 		t.Fatal("redirect to loopback must be blocked")
 	}
 }
+
+func TestSafeDialDoesNotConnectAfterRebindToPrivate(t *testing.T) {
+	dialer := &recordDialer{}
+	calls := 0
+	runner := NewRunner()
+	runner.Dialer = dialer
+	runner.Resolver = lookupFunc(func(context.Context, string) ([]net.IP, error) {
+		calls++
+		if calls == 1 {
+			return []net.IP{net.ParseIP("1.1.1.1")}, nil
+		}
+		return []net.IP{net.ParseIP("10.0.0.8")}, nil
+	})
+	_, _ = runner.safeDial(context.Background(), "tcp", "example.com:443")
+	_, err := runner.safeDial(context.Background(), "tcp", "example.com:443")
+	if err == nil || !errors.Is(err, ssrf.ErrBlocked) {
+		t.Fatalf("expected rebind block, got %v", err)
+	}
+	if len(dialer.addrs) != 1 || dialer.addrs[0] != "1.1.1.1:443" {
+		t.Fatalf("private rebind must not be dialed: %v", dialer.addrs)
+	}
+}
+
+type lookupFunc func(context.Context, string) ([]net.IP, error)
+
+func (f lookupFunc) LookupIP(ctx context.Context, host string) ([]net.IP, error) {
+	return f(ctx, host)
+}

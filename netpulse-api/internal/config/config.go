@@ -20,6 +20,7 @@ type Config struct {
 	SessionTTLHours   int
 	AdminEmails       []string
 	Environment       string
+	TrustProxy        bool
 }
 
 func FromEnv() Config {
@@ -32,11 +33,12 @@ func FromEnv() Config {
 		DatabaseURL:       os.Getenv("NETPULSE_DATABASE_URL"),
 		RedisURL:          os.Getenv("NETPULSE_REDIS_URL"),
 		ClickHouseURL:     os.Getenv("NETPULSE_CLICKHOUSE_URL"),
-		EngineVersion:     "0.12.0",
+		EngineVersion:     "0.13.0",
 		AuthDevTokens:     envBool("NETPULSE_AUTH_DEV_TOKENS", false),
 		SessionTTLHours:   envInt("NETPULSE_SESSION_TTL_HOURS", 168),
 		AdminEmails:       envList("NETPULSE_ADMIN_EMAILS"),
 		Environment:       env("NETPULSE_ENVIRONMENT", "development"),
+		TrustProxy:        envBool("NETPULSE_TRUST_PROXY", false),
 	}
 }
 

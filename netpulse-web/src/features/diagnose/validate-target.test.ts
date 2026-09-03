@@ -62,5 +62,9 @@ describe("validateDiagnoseTarget", () => {
       false
     );
     expect(validateDiagnoseTarget("::1").ok).toBe(false);
+    expect(validateDiagnoseTarget("168.63.129.16").ok).toBe(false);
+    expect(validateDiagnoseTarget("100.64.0.1").ok).toBe(false);
+    expect(validateDiagnoseTarget("foo.localhost").ok).toBe(false);
+    expect(validateDiagnoseTarget("db.internal").ok).toBe(false);
   });
 });

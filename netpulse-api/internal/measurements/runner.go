@@ -135,37 +135,10 @@ func (r *Runner) handshakeTLS(ctx context.Context, addr, serverName string) (boo
 // policy, and dials only a public IP. HTTP redirects must not inherit a
 // previous DNS answer (rebinding).
 func (r *Runner) safeDial(ctx context.Context, network, address string) (net.Conn, error) {
-	host, port, err := net.SplitHostPort(address)
-	if err != nil {
-		return nil, err
+	lookup := func(ctx context.Context, host string) ([]net.IP, error) {
+		return r.Resolver.LookupIP(ctx, host)
 	}
-	if err := r.Policy.CheckHost(host); err != nil {
-		return nil, err
-	}
-
-	dialAddr := address
-	if parsed := net.ParseIP(host); parsed != nil {
-		dialAddr = net.JoinHostPort(parsed.String(), port)
-	} else {
-		ips, lookupErr := r.Resolver.LookupIP(ctx, host)
-		if lookupErr != nil {
-			return nil, lookupErr
-		}
-		if err := r.Policy.CheckResolved(host, ips); err != nil {
-			return nil, err
-		}
-		public := ssrf.PublicIPs(ips)
-		if len(public) == 0 {
-			return nil, fmt.Errorf("%w: no public address", ssrf.ErrBlocked)
-		}
-		dialAddr = net.JoinHostPort(public[0].String(), port)
-	}
-
-	dialer := r.Dialer
-	if dialer == nil {
-		dialer = &net.Dialer{Timeout: tcpTimeout, KeepAlive: -1}
-	}
-	return dialer.DialContext(ctx, network, dialAddr)
+	return ssrf.PinDial(ctx, r.Policy, lookup, r.Dialer, network, address)
 }
 
 func (r *Runner) fetchHTTP(ctx context.Context, hostname string) (bool, string) {
@@ -203,19 +176,10 @@ func (r *Runner) fetchHTTP(ctx context.Context, hostname string) (bool, string) 
 }
 
 func (r *Runner) revalidate(ctx context.Context, next *url.URL) error {
-	if next == nil {
-		return ssrf.ErrBlocked
-	}
-	if next.Scheme != "http" && next.Scheme != "https" {
-		return fmt.Errorf("%w: redirect scheme", ssrf.ErrBlocked)
-	}
-	if next.User != nil {
-		return fmt.Errorf("%w: redirect credentials", ssrf.ErrBlocked)
-	}
-	host := next.Hostname()
-	if err := r.Policy.CheckHost(host); err != nil {
+	if err := ssrf.CheckURL(r.Policy, next, false); err != nil {
 		return err
 	}
+	host := next.Hostname()
 	ips, err := r.Resolver.LookupIP(ctx, host)
 	if err != nil {
 		return err

@@ -57,6 +57,9 @@ export default function PrivacyPage() {
           <p>
             Raw observations should be short-lived. Aggregates may last longer.
             Exact TTLs will be published with the API, not invented here.
+            Signed-in users can delete an account from account privacy settings
+            after confirmation. That removes the account in this process; it
+            does not claim a global erase of already-stored aggregates.
           </p>
         </section>
         <Button

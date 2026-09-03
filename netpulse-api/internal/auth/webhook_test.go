@@ -20,6 +20,9 @@ func TestWebhookSignatureRoundTrip(t *testing.T) {
 	if VerifyWebhook("other", timestamp, eventID, body, sig) {
 		t.Fatal("wrong secret must not verify")
 	}
+	if VerifyWebhook(secret, timestamp, eventID, body, "") {
+		t.Fatal("empty signature must not verify")
+	}
 }
 
 func TestAPIKeySecretIsHashedAndPrefixed(t *testing.T) {

@@ -5,6 +5,7 @@ import { PageHero } from "@/components/public/page-hero";
 import { AuthForm } from "@/features/account/auth-form";
 import { redirectIfSignedIn } from "@/lib/account/guard";
 import { isApiConfigured } from "@/lib/api/backend";
+import { safeNext } from "@/lib/auth/safe-next";
 
 export const dynamic = "force-dynamic";
 
@@ -42,8 +43,4 @@ export default async function LoginPage({ searchParams }: PageProps) {
       </PageContainer>
     </main>
   );
-}
-
-function safeNext(value: string): string {
-  return value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
 }

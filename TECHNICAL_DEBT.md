@@ -112,6 +112,8 @@ The product source of truth was provided in the engineering contract (chat). In-
 | TD-005 | No API or workers | 06 |
 | TD-006 | Worker SSRF / redirect revalidation | 06 |
 | TD-007 | Auth session cookie + authorization boundaries | 09 |
+| TD-008 | CI for lint, typecheck, tests, and web build | 13 |
+| TD-012 | Security hardening (SSRF gaps, CSRF on reports, headers, XFF rate-limit identity, open redirects) | 13 |
 
 ---
 
@@ -120,8 +122,7 @@ The product source of truth was provided in the engineering contract (chat). In-
 | ID | Sev | Item | Target stage |
 | --- | --- | --- | --- |
 | TD-004 | P1 | User-path isolation still cannot be inferred from worker vantage alone | later probes |
-| TD-008 | P2 | No CI | 11 |
-| TD-009 | P2 | No local Compose for Postgres/Redis | 11 |
+| TD-009 | P2 | No local Compose for Postgres/Redis | 14 |
 | TD-010 | P2 | Product spec only in chat + Stage 01 docs | later docs |
 | TD-011 | P1 | Default stores are process-local memory adapters until DSN drivers are linked | persistent store |
 
@@ -214,6 +215,15 @@ The product source of truth was provided in the engineering contract (chat). In-
 - Feature flags store environment, percentage, user ids, and org ids. They do not estimate how many users are in rollout.
 - Remote configuration overlays timeouts, diagnostic thresholds, and limits. Operational secrets are rejected. Postgres `configuration` remains the durable table; the runtime adapter is still an unlinked stub.
 - `/admin` is not linked from public navigation and is disallowed in `robots.ts`.
+
+## 18. Stage 13 notes
+
+- `X-Forwarded-For` is not a rate-limit identity unless `NETPULSE_TRUST_PROXY` is true. The Next.js BFF does not forward browser XFF. Loopback may pass `X-NetPulse-Client-IP` only when `NETPULSE_WEB_TRUST_PROXY=true`.
+- Webhook delivery uses an HTTPS client with SSRF dial pinning and redirect revalidation. Redirects to loopback, RFC1918, or metadata are not followed.
+- `POST /api/reports` requires CSRF (Origin, Referer, or `x-netpulse-csrf: same-origin`). Login `next` is allowlisted.
+- Web and API set CSP, nosniff, frame denial, and related headers. HSTS is production/HTTPS only.
+- Diagnostic copy is checked against panic infection phrases. Dangerous recommendations stay display-only and never auto-execute.
+- Postgres remains an unlinked stub. Compose and WAF are not this stage.
 
 ## 7. Stage 02 decisions
 

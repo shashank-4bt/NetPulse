@@ -38,7 +38,7 @@ func (s *Service) client() *http.Client {
 	if s.HTTPClient != nil {
 		return s.HTTPClient
 	}
-	return &http.Client{Timeout: 5 * time.Second}
+	return ssrf.NewHTTPSClient()
 }
 
 func (s *Service) WorkspaceForOwner(ctx context.Context, ownerID, name string) (contract.Workspace, *contract.APIError, int) {

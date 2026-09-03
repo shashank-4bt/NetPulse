@@ -1,8 +1,8 @@
 # NETPULSE Implementation Plan
 
-**Current stage:** 12 — Admin platform  
+**Current stage:** 13 — Security hardening  
 **Date:** 2026-09-03  
-**Status:** Stages 01–12 implemented. Internal operators can inspect stored system state, incidents, abuse, audit, feature flags, and remote configuration. Empty series stay unmeasured.
+**Status:** Stages 01–13 implemented. Measurement SSRF, webhook delivery, CSRF, headers, cookies, and rate-limit identity were audited and hardened. No new product surfaces.
 
 This plan is derived from:
 
@@ -205,15 +205,21 @@ The original plan listed accounts here. Accounts shipped as Stage 09.
 - Feature flags support environment, percentage rollout, user targeting, and organization targeting. Rollout user counts are not estimated.
 - Remote configuration stores timeouts, diagnostic thresholds, limits, and feature settings. Secrets are rejected.
 
-### Stage 13 — Hardening & operations
+### Stage 13 — Security hardening *(this repo)*
 
-- CI (lint, typecheck, test, build).
-- Rate limits, WAF later if needed.
+- Audit and tests for XSS, CSRF, SSRF, IDOR/authz, session cookies, secret exposure, open redirects, rate-limit identity, and webhook forgery.
+- Measurement and webhook SSRF: deny localhost, private, link-local, CGNAT, documentation, Azure IMDS, and internal DNS; pin public IPs; revalidate redirects (including DNS rebinding between lookups).
+- Web: CSP, HSTS in production, frame denial, CSRF on `POST /api/reports`, stricter post-login `next` allowlist.
+- API: security headers; `X-Forwarded-For` ignored unless `NETPULSE_TRUST_PROXY` is set.
+- Privacy and UX unchanged in product scope: coarse IP, telemetry opt-in default false, no browsing history, no panic infection copy, `autoExecute` stays false.
+- Minimal CI (lint, typecheck, unit tests, Go tests, production web build). Compose and WAF stay later.
+
+### Stage 14 — Hardening leftover (operations)
+
 - Docker Compose for local Postgres/Redis (and ClickHouse when required).
-- Structured logging, correlation ids.
-- Load/error budgets for diagnose endpoints.
+- Structured logging correlation ids and load/error budgets beyond current process logs.
 
-### Stage 14 — Future Internet Observatory (deferred)
+### Stage 15 — Future Internet Observatory (deferred)
 
 - Kafka/Redpanda, object storage, Neo4j, ECS/Fargate, Terraform, Cloudflare — **only with a written need**.
 
@@ -271,4 +277,4 @@ Do not mark a stage complete with known critical issues.
 
 ## 7. Next recommended stage
 
-**Stage 13 — Hardening & operations:** CI, Compose for local stores, and operational budgets.
+**Stage 14 — Operations leftover:** Compose for local stores, and operational budgets.

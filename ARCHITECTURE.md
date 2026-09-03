@@ -350,17 +350,22 @@ Policy: no tests that assert fabricated outage or service-status fixtures as if 
 
 SSRF policy for workers and any server-side fetch:
 
-**Deny:** localhost, loopback, RFC1918, link-local, IPv6 unique-local, cloud metadata (`169.254.169.254` and equivalents), internal hostnames.
+**Deny:** localhost and `.localhost`, loopback (IPv4/IPv6), RFC1918, CGNAT (`100.64/10`), link-local, IPv6 unique-local, documentation prefixes, IPv4 `240/4` and broadcast, 6to4/Teredo, NAT64-embedded private addresses, cloud metadata (`169.254.169.254`, Azure `168.63.129.16`), and internal hostnames (`.local`, `.internal`, `.lan`, `.corp`).
 
-**Require:** DNS resolve → IP allow-check → connect. Re-check after every redirect. Cap redirects and response size. No user-controlled URLs passed to the Next.js server as open proxies.
+**Require:** DNS resolve → IP allow-check → connect to a **pinned public IP**. Re-check after every redirect. Cap redirects and response size. No user-controlled URLs passed to the Next.js server as open proxies. Webhook delivery uses HTTPS only and the same dial/redirect policy.
+
+**Client IP / rate limits:** Use the TCP peer address. Ignore client-supplied `X-Forwarded-For` unless `NETPULSE_TRUST_PROXY` is set on a proxy that overwrites it. A loopback BFF may send `X-NetPulse-Client-IP` only when `NETPULSE_WEB_TRUST_PROXY` is enabled.
 
 Other baseline **PRODUCTION ENGINEERING REQUIREMENTS:**
 
 - No secrets in git; `.env` ignored; `.env.example` documents names only.
 - XSS: React default escaping; no `dangerouslySetInnerHTML` for diagnostic text.
 - SQL: parameterized queries only.
-- Rate limits on diagnose endpoints.
-- Webhook ingress (future) authenticated and size-limited.
+- Rate limits on diagnose and authentication endpoints.
+- CSRF for cookie-authenticated mutations and `POST /api/reports`.
+- CSP, HSTS (HTTPS/production), `X-Content-Type-Options`, `X-Frame-Options`, and related headers on the web app and API.
+- Webhook HMAC-SHA256 signatures (`sha256=`). Outbound delivery must not follow redirects into blocked space.
+- Diagnostic copy must not claim a device is definitely infected. Dangerous recommendations never auto-execute.
 
 ---
 

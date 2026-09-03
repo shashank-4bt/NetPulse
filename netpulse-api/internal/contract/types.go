@@ -1,9 +1,9 @@
 package contract
 
 const (
-	ModelVersion       = "0.12.0"
-	EngineVersion      = "0.12.0"
-	RuleVersion        = "0.12.0-admin-platform"
+	ModelVersion       = "0.13.0"
+	EngineVersion      = "0.13.0"
+	RuleVersion        = "0.13.0-security-hardening"
 	MeasurementVersion = "0.6.0-dns-tcp-tls-http"
 	ObservedFailures   = "Elevated connectivity failures observed"
 	ConfidenceCaveat   = "Confidence is not certainty. A level or percentage can be wrong and must not be treated as proof."

@@ -2,11 +2,18 @@ import { NextResponse } from "next/server";
 
 import { startDiagnosis } from "@/features/diagnose/start-diagnosis";
 import { toShareableReport } from "@/features/intelligence/shareable-report";
+import { csrfAllowed } from "@/lib/auth/csrf";
 import { loadDiagnosis } from "@/lib/reports/load";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  if (!csrfAllowed(request)) {
+    return NextResponse.json(
+      { ok: false, error: "Request origin was rejected." },
+      { status: 403 }
+    );
+  }
   let body: unknown;
   try {
     body = await request.json();

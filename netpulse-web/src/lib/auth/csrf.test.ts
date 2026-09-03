@@ -22,4 +22,19 @@ describe("csrfAllowed", () => {
     });
     expect(csrfAllowed(request)).toBe(true);
   });
+
+  it("rejects POST without Origin, Referer, or CSRF header", () => {
+    const request = new Request("http://localhost:3000/api/auth/login", {
+      method: "POST",
+    });
+    expect(csrfAllowed(request)).toBe(false);
+  });
+
+  it("allows POST with the same-origin CSRF header when Origin is absent", () => {
+    const request = new Request("http://localhost:3000/api/auth/login", {
+      method: "POST",
+      headers: { "x-netpulse-csrf": "same-origin" },
+    });
+    expect(csrfAllowed(request)).toBe(true);
+  });
 });

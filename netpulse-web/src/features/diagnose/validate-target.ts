@@ -56,6 +56,15 @@ function isPrivateOrLocalIp(ip: string): boolean {
   if (a === 172 && b >= 16 && b <= 31) {
     return true;
   }
+  if (a === 100 && b >= 64 && b <= 127) {
+    return true;
+  }
+  if (a === 168 && b === 63 && parts[2] === 129 && parts[3] === 16) {
+    return true;
+  }
+  if (a >= 240) {
+    return true;
+  }
   return false;
 }
 
@@ -72,7 +81,9 @@ function isBlockedIpv6(value: string): boolean {
     lowered.startsWith("fd") ||
     lowered.startsWith("::ffff:127.") ||
     lowered.startsWith("::ffff:10.") ||
-    lowered.startsWith("::ffff:192.168.")
+    lowered.startsWith("::ffff:192.168.") ||
+    lowered.startsWith("::ffff:169.254.") ||
+    lowered.startsWith("::ffff:168.63.129.16")
   );
 }
 
@@ -145,7 +156,7 @@ export function validateDiagnoseTarget(raw: string): TargetValidation {
   if (hostname.length > MAX_HOSTNAME_LENGTH) {
     return { ok: false, error: "Hostname is too long." };
   }
-  if (BLOCKED_HOSTS.has(hostname) || hostname.endsWith(".local")) {
+  if (BLOCKED_HOSTS.has(hostname) || hostname.endsWith(".local") || hostname.endsWith(".internal") || hostname.endsWith(".localhost") || hostname === "metadata") {
     return {
       ok: false,
       error: "Local and internal hostnames cannot be probed.",

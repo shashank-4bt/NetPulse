@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"log/slog"
-	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -184,6 +183,15 @@ func (s *Server) middleware(next http.Handler) http.Handler {
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-NetPulse-Session, X-NetPulse-Key")
 			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 		}
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("Referrer-Policy", "no-referrer")
+		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("X-Permitted-Cross-Domain-Policies", "none")
+		w.Header().Set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'")
+		if s.Cfg.Environment == "production" {
+			w.Header().Set("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
+		}
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -205,10 +213,7 @@ func (s *Server) health(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (s *Server) createDiagnosis(w http.ResponseWriter, r *http.Request) {
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-	if ip == "" {
-		ip = r.RemoteAddr
-	}
+	ip := s.clientIP(r)
 	if s.Limiter != nil && !s.Limiter.Allow("diag:"+ip, s.diagnoseLimit(r)) {
 		s.recordAbuse(r, "rate_limit", ip, "diagnoses", "blocked", "Diagnose rate limit exceeded.")
 		write(w, http.StatusTooManyRequests, contract.Envelope{Error: &contract.APIError{Code: "rate_limited", Message: "Too many diagnose requests"}})
@@ -341,13 +346,6 @@ func write(w http.ResponseWriter, status int, body contract.Envelope) {
 	}
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(body)
-}
-
-func ClientIP(r *http.Request) string {
-	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
-		return strings.TrimSpace(strings.Split(forwarded, ",")[0])
-	}
-	return r.RemoteAddr
 }
 
 func SessionToken(r *http.Request) string {

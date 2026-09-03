@@ -25,6 +25,20 @@ describe("reportHonestyErrors", () => {
     );
   });
 
+  it("rejects panic language in diagnostic copy", () => {
+    const report = createUnavailableReport({
+      ok: true,
+      raw: "example.com",
+      hostname: "example.com",
+      kind: "domain",
+      serviceSlug: null,
+    });
+    report.likelyCause = "Your device is definitely infected.";
+    expect(reportHonestyErrors(report)).toContain(
+      "Diagnostic copy must not claim a device is definitely infected."
+    );
+  });
+
   it("rejects a likely cause when no facts exist", () => {
     const report = createUnavailableReport({
       ok: true,
